@@ -1,0 +1,881 @@
+[
+  {
+    "type": "function",
+    "name": "cancelSlashingHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "cancelUpdateStakeHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "vault",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "celestiaVerifier",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IVerifier"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "challengeData",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "challenger",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "timeStamp",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "status",
+        "type": "uint8",
+        "internalType": "enum ChallengeStatus"
+      },
+      {
+        "name": "isNoOp",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "createChallenge",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "aggregatorSignature",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "commitment",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "daLayer",
+        "type": "uint8",
+        "internalType": "enum DALayer"
+      },
+      {
+        "name": "submissionTime",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "clientAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "rewardToken",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "rewardAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "createCounterChallenge",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "proof",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deposit",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "eip4844Verifier",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IVerifier"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "finishChallenge",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "finishFullWithdraw",
+    "inputs": [
+      {
+        "name": "withdrawHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "finishSlashingHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "finishUpdateStakeHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "initialize",
+    "inputs": [
+      {
+        "name": "_aggregator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_core",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_minBalance",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_challengeBond",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_permittedSubmissionPeriod",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_minOperatorBondValue",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_celestiaVerifier",
+        "type": "address",
+        "internalType": "contract IVerifier"
+      },
+      {
+        "name": "_eip4844Verifier",
+        "type": "address",
+        "internalType": "contract IVerifier"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "isOperatorRegistered",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "registered",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "kudaAccount",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "balance",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "operatorBond",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "bond",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "paused",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "registrationHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "extraData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "requestSlashingHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "slashingPercentagesWad",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "requestUpdateStakeHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "newStake",
+        "type": "tuple",
+        "internalType": "struct StakeUpdateRequest",
+        "components": [
+          {
+            "name": "vault",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "dss",
+            "type": "address",
+            "internalType": "contract IDSS"
+          },
+          {
+            "name": "stake",
+            "type": "uint96",
+            "internalType": "uint96"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "startFullWithdraw",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "withdrawHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "submitOperatorBond",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "submitReceipt",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "aggregatorSignature",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "commitment",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "context",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "daLayer",
+        "type": "uint8",
+        "internalType": "enum DALayer"
+      },
+      {
+        "name": "submissionTime",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "clientAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "rewardToken",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "rewardAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "submittedDALayer",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "daLayer",
+        "type": "uint8",
+        "internalType": "enum DALayer"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "submittedReceipt",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "receipt",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "supportsInterface",
+    "inputs": [
+      {
+        "name": "interfaceID",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "taskOperator",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "unregistrationHook",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "extraData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdraw",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "ChallengeCreated",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "indexed": true,
+        "internalType": "bytes16"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CounterChallengeCreated",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "indexed": true,
+        "internalType": "bytes16"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Initialized",
+    "inputs": [
+      {
+        "name": "version",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Paused",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ReceiptSubmitted",
+    "inputs": [
+      {
+        "name": "taskId",
+        "type": "bytes16",
+        "indexed": true,
+        "internalType": "bytes16"
+      },
+      {
+        "name": "operator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "receipt",
+        "type": "bytes",
+        "indexed": true,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Unpaused",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "AmountBelowMinBalance",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CannotCounterChallengeNoOp",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ChallengeAlreadyCreated",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ChallengeAlreadyFinalized",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ChallengePeriodIsOver",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ChallengePeriodNotOver",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ChallengePeriodNotStarted",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CounterChallengePeriodNotOver",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CounterChallengePeriodOver",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignature",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignatureLength",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignatureS",
+    "inputs": [
+      {
+        "name": "s",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EnforcedPause",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ExpectedPause",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FailedToDepositChallengeBond",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FailedToRewardChallenger",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FailedToRewardCounterChallenger",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidInitialization",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NoChallengeForGivenTaskId",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NoChallengeForTaskId",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotAggregator",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotEnoughBondSubmitted",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotEnoughETHForChallenge",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotEnoughFunds",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotInitializing",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "SenderNotOperator",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "SignatureVerifactionFailed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "SubmissionTimeOver",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "WithdrawDelayNotPassed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "WithdrawNotFound",
+    "inputs": []
+  }
+]

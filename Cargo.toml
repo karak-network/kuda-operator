@@ -1,0 +1,52 @@
+[package]
+name = "kuda-operator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+alloy = { version = "0.4.2", features = [
+    "full",
+    "network",
+    "signer-aws",
+    "signer-keystore",
+] }
+aws-config = "1.5.8"
+aws-sdk-kms = "1.47.0"
+axum = "0.7.6"
+base64 = "0.22.1"
+borsh = { version = "1.5.1", features = ["derive"] }
+c-kzg = "1.0.2"
+celestia-rpc = "0.6.0"
+celestia-types = "0.6.1"
+clap = { version = "4.5.20", features = ["color", "derive", "env"] }
+dotenvy = "0.15.7"
+envy = "0.4.2"
+eth-keystore = "0.5.0"
+eyre = "0.6.12"
+futures-util = "0.3.30"
+hex = { version = "0.4.3", features = ["serde"] }
+nmt-rs = { version = "0.2.3", features = ["borsh"] }
+regex = "1.10.5"
+reqwest = "0.12.5"
+rpassword = "7.3.1"
+rust_socketio = { version = "0.6.0", features = ["async", "async-callbacks"] }
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.120"
+serde_with = "3.9.0"
+tokio = { version = "1.38.0", features = ["full"] }
+tokio-util = "0.7.11"
+tower = "0.5.1"
+tower-http = { version = "0.6.1", features = ["trace"] }
+tower_governor = "0.4.2"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+url = { version = "2.5.2", features = ["serde"] }
+uuid = { version = "1.10.0", features = ["serde", "v4"] }
+
+[[bin]]
+name = "kuda-operator"
+path = "src/main.rs"
+
+[[bin]]
+name = "kuda-operator-register"
+path = "src/register.rs"
