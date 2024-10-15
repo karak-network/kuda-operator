@@ -2,7 +2,8 @@ name: Build and release operator binaries
 
 on:
   push:
-    branches: ["johanan/release-ci"]
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
   contents: write
@@ -25,18 +26,18 @@ jobs:
             target: x86_64-unknown-linux-gnu
             name: kuda-operator-linux-x86_64
             cross: false
-          # - build: linux-aarch64
-          #   os: ubuntu-latest
-          #   rust: stable
-          #   target: aarch64-unknown-linux-gnu
-          #   cross: true
-          #   name: kuda-operator-linux-aarch64
-          # - build: macos-aarch64
-          #   os: macos-latest
-          #   rust: stable
-          #   target: aarch64-apple-darwin
-          #   name: kuda-operator-macos-aarch64
-          #   cross: false
+          - build: linux-aarch64
+            os: ubuntu-latest
+            rust: stable
+            target: aarch64-unknown-linux-gnu
+            cross: true
+            name: kuda-operator-linux-aarch64
+          - build: macos-aarch64
+            os: macos-latest
+            rust: stable
+            target: aarch64-apple-darwin
+            name: kuda-operator-macos-aarch64
+            cross: false
 
     steps:
       - name: Checkout repository
