@@ -96,12 +96,12 @@ jobs:
 
       - name: Setup | Checksums
         run: |
-          for file in kuda-operator-*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
+          for file in kuda-operator/kuda-operator-*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
 
       - name: Release | Add Artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            kuda-operator-*.tar.gz
-            kuda-operator-*.tar.gz.sha256
+            kuda-operator/kuda-operator-*.tar.gz
+            kuda-operator/kuda-operator-*.tar.gz.sha256
           tag_name: ${{ env.VERSION }}
