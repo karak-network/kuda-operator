@@ -85,7 +85,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: ${{ matrix.name }}
+          path: |
+            ${{ matrix.name }}.tar.gz
+            ${{ matrix.name }}.sha256
 
   upload_artifacts:
     name: Add Build Artifacts to Release
@@ -99,5 +101,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            kuda-operator-*/kuda-operator-*
+            kuda-operator-linux-x86_64.tar.gz
+            kuda-operator-linux-x86_64.sha256
+            kuda-operator-linux-aarch64.tar.gz
+            kuda-operator-linux-aarch64.sha256
+            kuda-operator-macos-aarch64.tar.gz
+            kuda-operator-macos-aarch64.sha256
           tag_name: ${{ env.VERSION }}
