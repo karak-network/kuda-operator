@@ -2,6 +2,10 @@
 name = "kuda-operator"
 version = "0.1.0"
 edition = "2021"
+authors = ["Karak Network"]
+repository = "https://github.com/karak-network/kuda-operator.git"
+description = "KUDA Operator"
+license = "BUSL-1.1"
 
 [dependencies]
 alloy = { version = "0.4.2", features = [
