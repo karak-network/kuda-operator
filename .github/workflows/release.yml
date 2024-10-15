@@ -95,12 +95,7 @@ jobs:
       - name: Setup | Artifacts
         uses: actions/download-artifact@v4
 
-      - name: Setup | Publish Release
-        run: gh release edit ${{ env.VERSION }} --draft=false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build | Add Artifacts to Release
+      - name: Release | Add Artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
