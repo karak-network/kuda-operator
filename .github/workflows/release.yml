@@ -2,8 +2,7 @@ name: Build and release operator binaries
 
 on:
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+    branches: ["johanan/release-ci"]
 
 permissions:
   contents: write
@@ -44,7 +43,7 @@ jobs:
         if: matrix.build == 'linux-x86_64'
         shell: bash
         run: |
-          apt-get update && apt-get install -y protobuf-compiler
+          sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
       - name: Install packages (MacOS aarch64)
         if: matrix.build == 'macos-aarch64'
@@ -68,29 +67,3 @@ jobs:
           cp target/${{ matrix.target }}/release/kuda-operator-register ${{ matrix.name }}
           tar czvf ${{ matrix.name }}.tar.gz ${{ matrix.name }}
           shasum -a 256 ${{ matrix.name }}.tar.gz > ${{ matrix.name }}.sha256
-
-      - name: Release | Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.name }}
-          path: ${{ matrix.name }}
-
-  upload_artifacts:
-    name: Add Build Artifacts to Release
-    needs: [build-release]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup | Artifacts
-        uses: actions/download-artifact@v4
-
-      - name: Setup | Publish Release
-        run: gh release edit ${{ env.VERSION }} --draft=false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build | Add Artifacts to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            kuda-operator-*/kuda-operator-*
-          tag_name: ${{ env.VERSION }}
