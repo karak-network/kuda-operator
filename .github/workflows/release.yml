@@ -95,7 +95,7 @@ jobs:
 
       - name: Setup | Checksums
         run: |
-          ls kuda-operator/*.tar.gz
+          ls -R
           for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
 
       - name: Release | Add Artifacts to Release
