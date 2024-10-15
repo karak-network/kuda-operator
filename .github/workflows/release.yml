@@ -83,7 +83,7 @@ jobs:
       - name: Release | Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.name }}
+          name: ${{ matrix.name }}.tar.gz
           path: ${{ matrix.name }}.tar.gz
 
   upload_artifacts:
