@@ -1,6 +1,4 @@
 allow-branch = ["main"]
-sign-commit = true
-sign-tag = true
 shared-version = true
 tag-prefix = ""         # tag only once instead of per every crate
 publish = false
