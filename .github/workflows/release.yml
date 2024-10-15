@@ -2,7 +2,7 @@ name: Build and release operator binaries
 
 on:
   push:
-    branches: ["johanan/release/ci"]
+    branches: ["johanan/release-ci"]
 
 permissions:
   contents: write
