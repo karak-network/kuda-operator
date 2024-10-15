@@ -39,8 +39,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup | Install cross [Linux]
+        if: matrix.os == 'ubuntu-latest'
+        uses: taiki-e/install-action@cross
+
+      - name: Setup | Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+
       - name: Install packages (Linux x86_64)
-        if: matrix.build == 'linux-x86_64'
+        if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           sudo apt-get update && sudo apt-get install -y protobuf-compiler
@@ -51,14 +61,13 @@ jobs:
         run: |
           brew update && brew install protobuf
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
+      - name: Build | Build [Cargo]
+        if: matrix.os != 'ubuntu-latest'
+        run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Cargo build
-        run: cargo build --package kuda-operator --release --target ${{ matrix.target }}
+      - name: Build | Build [Cross]
+        if: matrix.os == 'ubuntu-latest'
+        run: cross build --release --target ${{ matrix.target }}
 
       - name: Post Build | Prepare artifacts
         run: |
