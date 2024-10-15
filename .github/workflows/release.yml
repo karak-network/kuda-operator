@@ -52,8 +52,8 @@ jobs:
         if: matrix.build == 'linux-aarch64'
         uses: taiki-e/install-action@cross
 
-      - name: Install packages (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install packages (Linux x86_64)
+        if: matrix.build == 'linux-x86_64'
         shell: bash
         run: |
           sudo apt-get update
