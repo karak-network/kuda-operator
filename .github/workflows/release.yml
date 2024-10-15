@@ -93,15 +93,16 @@ jobs:
     steps:
       - name: Setup | Artifacts
         uses: actions/download-artifact@v4
+        with:
+          path: kuda-operator
+          merge-multiple: true
 
       - name: Setup | Checksums
         run: |
-          for file in kuda-operator/kuda-operator-*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
+          for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
 
       - name: Release | Add Artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            kuda-operator/kuda-operator-*.tar.gz
-            kuda-operator/kuda-operator-*.tar.gz.sha256
+          files: kuda-operator/*
           tag_name: ${{ env.VERSION }}
