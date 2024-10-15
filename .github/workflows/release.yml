@@ -2,8 +2,7 @@ name: Build and release operator binaries
 
 on:
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+    branches: ["johanan/release/ci"]
 
 permissions:
   contents: write
@@ -96,12 +95,13 @@ jobs:
 
       - name: Setup | Checksums
         run: |
-          for file in kuda-operator/kuda-operator-*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
+          ls kuda-operator/*.tar.gz
+          for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
 
       - name: Release | Add Artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            kuda-operator/kuda-operator-*.tar.gz
-            kuda-operator/kuda-operator-*.tar.gz.sha256
+
+            kuda-operator/*
           tag_name: ${{ env.VERSION }}
