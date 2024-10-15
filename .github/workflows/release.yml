@@ -39,22 +39,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup | Install cross [Linux]
-        if: matrix.os == 'ubuntu-latest'
-        uses: taiki-e/install-action@cross
-
       - name: Setup | Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
 
-      - name: Install packages (Linux x86_64)
+      - name: Install packages (Linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev
+
+      - name: Install linker (Linux aarch64)
+        if: matrix.build == 'linux-aarch64'
+        shell: bash
+        run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu
 
       - name: Install packages (MacOS aarch64)
         if: matrix.build == 'macos-aarch64'
@@ -62,13 +64,8 @@ jobs:
         run: |
           brew update && brew install protobuf
 
-      - name: Build | Build [Cargo]
-        if: matrix.os != 'ubuntu-latest'
+      - name: Build
         run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Build | Build [Cross]
-        if: matrix.os == 'ubuntu-latest'
-        run: cross build --release --target ${{ matrix.target }}
 
       - name: Post Build | Prepare artifacts
         run: |
