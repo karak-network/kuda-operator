@@ -54,3 +54,36 @@ path = "src/main.rs"
 [[bin]]
 name = "kuda-operator-register"
 path = "src/register.rs"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.22.1"
+# CI backends to support
+ci = "github"
+# The installers to generate for each app
+installers = ["shell"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["aarch64-apple-darwin", "x86_64-unknown-linux-gnu"]
+# Path that installers should place binaries in
+install-path = "~/.karak/bin"
+# Whether to install an updater program
+install-updater = false
+hosting = ["github"]
+github-attestations = true
+pr-run-mode = "upload"
+
+[workspace.metadata.dist.github-custom-runners]
+aarch64-apple-darwin = "macos-latest"
+x86_64-unknown-linux-gnu = "ubuntu-latest"
+
+[workspace.metadata.dist.dependencies.homebrew]
+protobuf = { version = '*', targets = ["aarch64-apple-darwin"] }
+
+[workspace.metadata.dist.dependencies.apt]
+protobuf-compiler = { version = '*', targets = ["x86_64-unknown-linux-gnu"] }
