@@ -44,5 +44,6 @@ jobs:
       - uses: taiki-e/cache-cargo-install-action@v2
         with:
           tool: cargo-semver-checks
+      - uses: Swatinem/rust-cache@v2
       - name: Semver Checks
-        run: cargo semver-checks --baseline-rev main
+        run: cargo semver-checks --baseline-rev refs/heads/main
