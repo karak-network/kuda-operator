@@ -1,0 +1,48 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+name: Continuous Integration
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Rustfmt
+        run: cargo fmt --all --check
+      - name: Check
+        run: cargo check --all-targets --all-features
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Test
+        run: cargo test --all-targets --all-features
+
+  semver-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/cache-cargo-install-action@v2
+        with:
+          tool: cargo-semver-checks
+      - name: Semver Checks
+        run: cargo semver-checks --baseline-rev main
