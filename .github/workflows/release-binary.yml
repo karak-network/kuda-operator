@@ -89,16 +89,6 @@ jobs:
     needs: [build-release]
     runs-on: ubuntu-latest
     steps:
-      - name: Setup | Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: kuda-operator
-          merge-multiple: true
-
-      - name: Setup | Checksums
-        run: |
-          for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -110,12 +100,22 @@ jobs:
         run: |
           export BASE_URL=${{ github.repository }}/releases/download/${{ github.ref_name }}
           export VERSION=$(echo ${{ github.ref }} | sed -E 's/refs\/tags\/v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-          touch kuda-operator/kuda-operator-installer.sh
+          mkdir -p kuda-operator
           awk '{
             gsub("{{ app_version }}", "$VERSION")
             gsub("{{ base_url }}", $BASE_URL)
             print
           }' $GITHUB_WORKSPACE/.github/workflows/kuda-operator-installer.sh.j2 > kuda-operator/kuda-operator-installer.sh
+
+      - name: Setup | Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: kuda-operator
+          merge-multiple: true
+
+      - name: Setup | Checksums
+        run: |
+          for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
 
       - name: Release | Add Artifacts to Release
         uses: softprops/action-gh-release@v2
