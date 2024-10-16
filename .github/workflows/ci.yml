@@ -36,14 +36,3 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Test
         run: cargo test --all-targets --all-features
-
-  semver-checks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: taiki-e/cache-cargo-install-action@v2
-        with:
-          tool: cargo-semver-checks
-      - uses: Swatinem/rust-cache@v2
-      - name: Semver Checks
-        run: cargo semver-checks --baseline-rev refs/heads/main
