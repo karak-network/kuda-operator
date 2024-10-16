@@ -10,7 +10,6 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  VERSION: ${{ github.ref_name }}
 
 jobs:
   build-release:
@@ -88,9 +87,30 @@ jobs:
 
   upload_artifacts:
     name: Add Build Artifacts to Release
-    needs: [build-release]
+    # needs: [build-release]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/workflows/kuda-operator-installer.sh.j2
+          sparse-checkout-cone-mode: false
+
+      - name: Setup | Installer
+        run: |
+          export BASE_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}
+          export VERSION=$(echo ${{ github.ref_name }} | sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          echo "BASE_URL: $BASE_URL"
+          echo "VERSION: $VERSION"
+          mkdir -p kuda-operator
+          awk -v version="$VERSION" -v base_url="$BASE_URL" '{
+            gsub("{{ app_version }}", version)
+            gsub("{{ base_url }}", base_url)
+            print
+          }' $GITHUB_WORKSPACE/.github/workflows/kuda-operator-installer.sh.j2 > kuda-operator/kuda-operator-installer.sh
+          cat kuda-operator/kuda-operator-installer.sh
+
       - name: Setup | Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -105,4 +125,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: kuda-operator/*
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ github.ref }}
+          body: |
+            ## Release Notes
+            ## Install the KUDA Operator using the following command:
+            ```bash
+            curl --proto '=https' --tlsv1.2 -LsSf ${{ github.repository }}/releases/download/${{ github.ref_name }}/kuda-operator-installer.sh | sh
+            ```
