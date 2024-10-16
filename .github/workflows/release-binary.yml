@@ -23,19 +23,19 @@ jobs:
             os: ubuntu-latest
             rust: stable
             target: x86_64-unknown-linux-gnu
-            name: kuda-operator-linux-x86_64
+            name: kuda-operator-x86_64-unknown-linux-gnu
             cross: false
           - build: linux-aarch64
             os: ubuntu-latest
             rust: stable
             target: aarch64-unknown-linux-gnu
+            name: kuda-operator-aarch64-unknown-linux-gnu
             cross: true
-            name: kuda-operator-linux-aarch64
           - build: macos-aarch64
             os: macos-latest
             rust: stable
             target: aarch64-apple-darwin
-            name: kuda-operator-macos-aarch64
+            name: kuda-operator-aarch64-apple-darwin
             cross: false
 
     steps:
@@ -75,19 +75,19 @@ jobs:
 
       - name: Post Build | Prepare artifacts
         run: |
-          mkdir ${{ matrix.name }}
+          mkdir -p ${{ matrix.name}}
           cp target/${{ matrix.target }}/release/kuda-operator ${{ matrix.name }}
           cp target/${{ matrix.target }}/release/kuda-operator-register ${{ matrix.name }}
-          tar czvf ${{ matrix.name }}.tar.gz ${{ matrix.name }}
+          tar czvf ${{ matrix.name }}.tar.xz ${{ matrix.name }}
       - name: Release | Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.name }}.tar.gz
-          path: ${{ matrix.name }}.tar.gz
+          name: ${{ matrix.name }}.tar.xz
+          path: ${{ matrix.name }}.tar.xz
 
   upload_artifacts:
     name: Add Build Artifacts to Release
-    # needs: [build-release]
+    needs: [build-release]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -101,15 +101,12 @@ jobs:
         run: |
           export BASE_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}
           export VERSION=$(echo ${{ github.ref_name }} | sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-          echo "BASE_URL: $BASE_URL"
-          echo "VERSION: $VERSION"
           mkdir -p kuda-operator
           awk -v version="$VERSION" -v base_url="$BASE_URL" '{
             gsub("{{ app_version }}", version)
             gsub("{{ base_url }}", base_url)
             print
           }' $GITHUB_WORKSPACE/.github/workflows/kuda-operator-installer.sh.j2 > kuda-operator/kuda-operator-installer.sh
-          cat kuda-operator/kuda-operator-installer.sh
 
       - name: Setup | Artifacts
         uses: actions/download-artifact@v4
@@ -119,16 +116,16 @@ jobs:
 
       - name: Setup | Checksums
         run: |
-          for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
+          for file in kuda-operator/*.tar.xz; do shasum -a 256 "$file" > "${file}.sha256"; done
 
       - name: Release | Add Artifacts to Release
         uses: softprops/action-gh-release@v2
         with:
           files: kuda-operator/*
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
           body: |
             ## Release Notes
-            ## Install the KUDA Operator using the following command:
+            ## Install the KUDA Operator using the following command
             ```bash
-            curl --proto '=https' --tlsv1.2 -LsSf ${{ github.repository }}/releases/download/${{ github.ref_name }}/kuda-operator-installer.sh | sh
+            curl --proto '=https' --tlsv1.2 -LsSf ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/kuda-operator-installer.sh | sh
             ```
