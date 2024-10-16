@@ -2,7 +2,7 @@ version: '3'
 
 services:
   operator:
-    image: karaknet/kuda-operator
+    image: ghcr.io/karak-network/kuda-operator:latest
     environment:
       - AGGREGATOR_URL=
       - KUDA_RPC_URL=
@@ -28,5 +28,5 @@ services:
       - RUST_LOG=info
     ports:
       - "8080:8080"
-    volumes: 
+    volumes:
       - {keystore/local/path}:keystore
