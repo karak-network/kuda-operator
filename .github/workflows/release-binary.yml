@@ -98,14 +98,14 @@ jobs:
 
       - name: Setup | Installer
         run: |
-          export BASE_URL=${{ github.repository }}/releases/download/${{ github.ref_name }}
+          export BASE_URL=${{ github.repositoryUrl }}/releases/download/${{ github.ref_name }}
           export VERSION=$(echo ${{ github.ref }} | sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           echo "BASE_URL: $BASE_URL"
           echo "VERSION: $VERSION"
           mkdir -p kuda-operator
-          awk '{
-            gsub("{{ app_version }}", "$VERSION")
-            gsub("{{ base_url }}", $BASE_URL)
+          awk -v version="$VERSION" -v base_url="$BASE_URL" '{
+            gsub("{{ app_version }}", version)
+            gsub("{{ base_url }}", base_url)
             print
           }' $GITHUB_WORKSPACE/.github/workflows/kuda-operator-installer.sh.j2 > kuda-operator/kuda-operator-installer.sh
           cat kuda-operator/kuda-operator-installer.sh
