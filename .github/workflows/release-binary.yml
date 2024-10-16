@@ -11,82 +11,82 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-release:
-    name: build-release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - build: linux-x86_64
-            os: ubuntu-latest
-            rust: stable
-            target: x86_64-unknown-linux-gnu
-            name: kuda-operator-linux-x86_64
-            cross: false
-          # - build: linux-aarch64
-          #   os: ubuntu-latest
-          #   rust: stable
-          #   target: aarch64-unknown-linux-gnu
-          #   cross: true
-          #   name: kuda-operator-linux-aarch64
-          # - build: macos-aarch64
-          #   os: macos-latest
-          #   rust: stable
-          #   target: aarch64-apple-darwin
-          #   name: kuda-operator-macos-aarch64
-          #   cross: false
+  # build-release:
+  #   name: build-release
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - build: linux-x86_64
+  #           os: ubuntu-latest
+  #           rust: stable
+  #           target: x86_64-unknown-linux-gnu
+  #           name: kuda-operator-linux-x86_64
+  #           cross: false
+  #         - build: linux-aarch64
+  #           os: ubuntu-latest
+  #           rust: stable
+  #           target: aarch64-unknown-linux-gnu
+  #           cross: true
+  #           name: kuda-operator-linux-aarch64
+  #         - build: macos-aarch64
+  #           os: macos-latest
+  #           rust: stable
+  #           target: aarch64-apple-darwin
+  #           name: kuda-operator-macos-aarch64
+  #           cross: false
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Setup | Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
+  #     - name: Setup | Rust
+  #       uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         target: ${{ matrix.target }}
 
-      - name: Setup | Install cross (Linux aarch64)
-        if: matrix.build == 'linux-aarch64'
-        uses: taiki-e/install-action@cross
+  #     - name: Setup | Install cross (Linux aarch64)
+  #       if: matrix.build == 'linux-aarch64'
+  #       uses: taiki-e/install-action@cross
 
-      - name: Install packages (Linux x86_64)
-        if: matrix.build == 'linux-x86_64'
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler
+  #     - name: Install packages (Linux x86_64)
+  #       if: matrix.build == 'linux-x86_64'
+  #       shell: bash
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y protobuf-compiler
 
-      - name: Install packages (MacOS aarch64)
-        if: matrix.build == 'macos-aarch64'
-        shell: bash
-        run: |
-          brew update && brew install protobuf
+  #     - name: Install packages (MacOS aarch64)
+  #       if: matrix.build == 'macos-aarch64'
+  #       shell: bash
+  #       run: |
+  #         brew update && brew install protobuf
 
-      - name: Build | Build [cargo]
-        if: matrix.cross == false
-        run: cargo build --release --target ${{ matrix.target }}
+  #     - name: Build | Build [cargo]
+  #       if: matrix.cross == false
+  #       run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Build | Build [cross]
-        if: matrix.cross == true
-        run: cross build --release --target ${{ matrix.target }}
+  #     - name: Build | Build [cross]
+  #       if: matrix.cross == true
+  #       run: cross build --release --target ${{ matrix.target }}
 
-      - name: Post Build | Prepare artifacts
-        run: |
-          mkdir ${{ matrix.name }}
-          cp target/${{ matrix.target }}/release/kuda-operator ${{ matrix.name }}
-          cp target/${{ matrix.target }}/release/kuda-operator-register ${{ matrix.name }}
-          tar czvf ${{ matrix.name }}.tar.gz ${{ matrix.name }}
-      - name: Release | Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.name }}.tar.gz
-          path: ${{ matrix.name }}.tar.gz
+  #     - name: Post Build | Prepare artifacts
+  #       run: |
+  #         mkdir ${{ matrix.name }}
+  #         cp target/${{ matrix.target }}/release/kuda-operator ${{ matrix.name }}
+  #         cp target/${{ matrix.target }}/release/kuda-operator-register ${{ matrix.name }}
+  #         tar czvf ${{ matrix.name }}.tar.gz ${{ matrix.name }}
+  #     - name: Release | Upload artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ${{ matrix.name }}.tar.gz
+  #         path: ${{ matrix.name }}.tar.gz
 
   upload_artifacts:
     name: Add Build Artifacts to Release
-    needs: [build-release]
+    # needs: [build-release]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -106,25 +106,26 @@ jobs:
             gsub("{{ base_url }}", $BASE_URL)
             print
           }' $GITHUB_WORKSPACE/.github/workflows/kuda-operator-installer.sh.j2 > kuda-operator/kuda-operator-installer.sh
+          cat kuda-operator/kuda-operator-installer.sh
 
-      - name: Setup | Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: kuda-operator
-          merge-multiple: true
+      # - name: Setup | Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: kuda-operator
+      #     merge-multiple: true
 
-      - name: Setup | Checksums
-        run: |
-          for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
+      # - name: Setup | Checksums
+      #   run: |
+      #     for file in kuda-operator/*.tar.gz; do shasum -a 256 "$file" > "${file}.sha256"; done
 
-      - name: Release | Add Artifacts to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: kuda-operator/*
-          tag_name: ${{ github.ref }}
-          body: |
-            ## Release Notes
-            ## Install the KUDA Operator using the following command:
-            ```bash
-            curl --proto '=https' --tlsv1.2 -LsSf ${{ github.repository }}/releases/download/${{ github.ref_name }}/kuda-operator-installer.sh | sh
-            ```
+      # - name: Release | Add Artifacts to Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: kuda-operator/*
+      #     tag_name: ${{ github.ref }}
+      #     body: |
+      #       ## Release Notes
+      #       ## Install the KUDA Operator using the following command:
+      #       ```bash
+      #       curl --proto '=https' --tlsv1.2 -LsSf ${{ github.repository }}/releases/download/${{ github.ref_name }}/kuda-operator-installer.sh | sh
+      #       ```
