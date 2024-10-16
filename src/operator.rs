@@ -32,6 +32,7 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn register(&self) -> eyre::Result<()> {
         let receipt = self
             .core_instance
@@ -47,6 +48,7 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn is_registered(&self) -> eyre::Result<bool> {
         let is_registered = self
             .core_instance
@@ -58,6 +60,7 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
     }
 
     // TODO: Normalize to ETH
+    #[tracing::instrument(skip(self))]
     pub async fn stake(&self) -> eyre::Result<HashMap<String, U256>> {
         let operator_vaults = self
             .core_instance

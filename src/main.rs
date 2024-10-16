@@ -14,6 +14,9 @@ use kuda_operator::{
     socketio::socket_io,
     EnvConfig,
 };
+use opentelemetry::{trace::TracerProvider, KeyValue};
+use opentelemetry_sdk::Resource;
+use opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 use tokio::{net::TcpListener, signal};
 use tokio_util::sync::CancellationToken;
 use tower::ServiceBuilder;
@@ -53,10 +56,32 @@ async fn main() -> eyre::Result<()> {
 
     dotenvy::dotenv().ok();
     let config = envy::from_env::<EnvConfig>()?;
+
+    let tracer = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(opentelemetry_otlp::new_exporter().http())
+        .with_trace_config(opentelemetry_sdk::trace::Config::default().with_resource(
+            Resource::new(vec![KeyValue::new(SERVICE_NAME, "kuda-operator")]),
+        ))
+        .install_batch(opentelemetry_sdk::runtime::Tokio)?
+        .tracer("kuda-operator");
+
+    // log level filtering here
+    let filter_layer = EnvFilter::from_default_env();
+
+    // fmt layer - printing out logs
+    let fmt_layer = fmt::layer().compact();
+
+    // turn our OTLP pipeline into a tracing layer
+    let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
+
+    // initialise our subscriber
     tracing_subscriber::registry()
-        .with(fmt::layer())
-        .with(EnvFilter::from_default_env())
+        .with(filter_layer)
+        .with(fmt_layer)
+        .with(otel_layer)
         .init();
+
     let (operator_wallet, operator_signer, eip_4844_signer): (
         EthereumWallet,
         Arc<dyn Signer + Send + Sync + 'static>,

@@ -131,6 +131,7 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
     Ok(())
 }
 
+#[tracing::instrument(skip(client, operator_address, kuda_instance))]
 async fn process_posting_intent<T: Transport + Clone, P: Provider<T>>(
     payload: &Payload,
     client: &rust_socketio::asynchronous::Client,
@@ -169,6 +170,7 @@ async fn process_posting_intent<T: Transport + Clone, P: Provider<T>>(
     Ok(())
 }
 
+#[tracing::instrument(skip(celestia_client, eip4844_client, operator_signer, kuda_instance))]
 async fn process_task_responsibility<T: Transport + Clone, P: Provider<T>>(
     payload: Payload,
     celestia_client: &CelestiaClient,

@@ -33,6 +33,7 @@ impl IntoResponse for HealthCheck {
     }
 }
 
+#[tracing::instrument]
 pub async fn health_check(State(socket_io_connected): State<Arc<RwLock<bool>>>) -> HealthCheck {
     let socket_io_connected = socket_io_connected.read().await;
     if *socket_io_connected {
