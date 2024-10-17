@@ -17,9 +17,9 @@ kuda-operator-register --signer-type local --keystore <KEYSTORE_PATH> --rpc-url 
 You'll need to provide the following environment variables:
 
 ```shell
-AGGREGATOR_URL=http://3.110.29.45:8081/
-KUDA_CONTRACT_ADDRESS=0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b
-CORE_CONTRACT_ADDRESS=0xb3E2dA61df98E44457190383e1FF13e1ea13280b
+AGGREGATOR_URL=
+KUDA_CONTRACT_ADDRESS=
+CORE_CONTRACT_ADDRESS=
 CELESTIA_RPC_URL=
 CELESTIA_AUTH_TOKEN=
 
@@ -40,7 +40,7 @@ EIP4844_TO_ADDRESS=
 EIP4844_RPC_URL=
 EIP4844_BEACON_URL=
 
-RUST_LOG= info
+RUST_LOG=info
 ```
 
 If you're using the `local` signer, you don't need to provide the AWS environment variables. If you're using the `aws` signer, you don't need to provide the local environment variables.
