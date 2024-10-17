@@ -27,37 +27,22 @@ This guide will help you set up and run the KUDA as an Operator.
 
 Run the following command to download the binaries:
 
-    curl --proto '=https' --tlsv1.2 -LsSf https://github.com/karak-network/kuda-operator/releases/download/v0.1.0/kuda-operator-installer.sh | sh
-
+```bash
+ curl --proto '=https' --tlsv1.2 -LsSf https://github.com/karak-network/kuda-operator/releases/download/v0.1.0/kuda-operator-installer.sh | sh
+````
 This installer will install two binaries:
 1. `kuda-operator`: The main KUDA operator binary
 2. `kuda-operator-register`: CLI used for registration
 
-The script will place these binaries in the `$HOME/.karak` directory and add this directory to your `$PATH` variable.
+The script will place these binaries in the `$HOME/.karak/bin` directory and add this directory to your `$PATH` variable.
 
-## Registering the Operator
-
-### With Keystore
-```bash
-    kuda-operator-register --signer-type keystore --keystore {path-to-keystore} --rpc-url {NETWORK_RPC_URL} \
-    --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
-    --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
-```
-### With AWS KMS
-
-```bash
-    kuda-operator-register --signer-type aws --aws-region {AWS_REGION} --aws-access-key-id {AWS_ACCESS_KEY} \
-    --aws-secret-access-key {AWS_ACCESS_KEY} --aws-operator-key-id 08251e9b-0159-43f4-af82-721ff458b8dd --rpc-url {NETWORK_RPC_URL} \
-    --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
-    --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
-```
 ## Key Management
 
 ### Type 1: Keystore
 To create a new account, run the following command:
 
 ```bash
-   geth account new
+geth account new
 ```
 
 Use the keystore file path in the `compose.yml`. For example, if the path is:
@@ -78,6 +63,22 @@ Set the following environment variables:
 
 For more information, refer to the [AWS KMS Documentation](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html).
 
+## Registering the Operator
+
+### With Keystore
+```bash
+ kuda-operator-register --signer-type keystore --keystore {path-to-keystore} --rpc-url {NETWORK_RPC_URL} \
+ --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
+ --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
+```
+### With AWS KMS
+
+```bash
+ kuda-operator-register --signer-type aws --aws-region {AWS_REGION} --aws-access-key-id {AWS_ACCESS_KEY} \
+ --aws-secret-access-key {AWS_ACCESS_KEY} --aws-operator-key-id 08251e9b-0159-43f4-af82-721ff458b8dd --rpc-url {NETWORK_RPC_URL} \
+ --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
+ --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
+```
 ## Docker Setup
 
 Fill out the `compose.yml` with the following environment variables:
@@ -118,11 +119,13 @@ Alternatively, you can run the KUDA operator binary directly:
 1. Fill out the environment variables in an `.env` file.
 2. run 
 ```bash 
-    source .env
+source .env
  ```
 3. Run the binary:
 
-       kuda-operator
+```bash 
+kuda-operator
+```
 
 ---
 
