@@ -6,6 +6,7 @@ use alloy::{
     signers::{aws::AwsSigner, local::PrivateKeySigner, Signature, Signer},
 };
 use aws_config::{BehaviorVersion, Region};
+use clap::Command;
 use kuda_operator::{
     contracts::kuda::Kuda,
     da::{celestia::CelestiaClient, eip4844::Eip4844Client},
@@ -23,6 +24,33 @@ use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, Env
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    Command::new("kuda-operator")
+        .version(env!("CARGO_PKG_VERSION"))
+        .about("KUDA Operator")
+        .after_long_help(
+            "You'll need to set the following environment variables:\n\
+            - AGGREGATOR_URL\n\n\
+            - CELESTIA_RPC_URL\n\
+            - CELESTIA_AUTH_TOKEN\n\n\
+            - KUDA_CONTRACT_ADDRESS\n\
+            - CORE_CONTRACT_ADDRESS\n\
+            - KUDA_RPC_URL\n\n\
+            - SIGNER_TYPE [possible values: local, aws]\n\n\
+            - AWS_REGION [required if SIGNER_TYPE=aws]\n\
+            - AWS_ACCESS_KEY_ID [required if SIGNER_TYPE=aws]\n\
+            - AWS_SECRET_ACCESS_KEY [required if SIGNER_TYPE=aws]\n\
+            - AWS_OPERATOR_KEY_ID [required if SIGNER_TYPE=aws]\n\
+            - AWS_EIP4844_KEY_ID [required if SIGNER_TYPE=aws]\n\n\
+            - OPERATOR_KEYSTORE_PATH [required if SIGNER_TYPE=local]\n\
+            - OPERATOR_KEYSTORE_PASSWORD [required if SIGNER_TYPE=local]\n\
+            - EIP4844_KEYSTORE_PATH [required if SIGNER_TYPE=local]\n\
+            - EIP4844_KEYSTORE_PASSWORD [required if SIGNER_TYPE=local]\n\n\
+            - EIP4844_TO_ADDRESS\n\
+            - EIP4844_RPC_URL\n\
+            - EIP4844_BEACON_URL\n",
+        )
+        .get_matches();
+
     dotenvy::dotenv().ok();
     let config = envy::from_env::<EnvConfig>()?;
     tracing_subscriber::registry()
