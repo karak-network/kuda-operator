@@ -20,7 +20,6 @@ This guide will help you set up and run the KUDA as an Operator.
 
 ## Prerequisites
 - Docker
-- Rustc, Cargo (latest stable version)
 - Geth (to create keystore wallet)
 
 ## Installation
@@ -67,9 +66,9 @@ For more information, refer to the [AWS KMS Documentation](https://docs.aws.amaz
 
 ### With Keystore
 ```bash
- kuda-operator-register --signer-type keystore --keystore {path-to-keystore} --rpc-url {NETWORK_RPC_URL} \
- --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
- --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
+  kuda-operator-register --signer-type keystore --keystore {path-to-keystore} --rpc-url {NETWORK_RPC_URL} \
+  --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
+  --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
 ```
 ### With AWS KMS
 
@@ -106,7 +105,7 @@ Fill out the `compose.yml` with the following environment variables:
 
 ### Run the Docker Container
 
-    docker compose up --build --detach
+    docker compose up --detach
 
 ### Shut Down the Docker Container
 
