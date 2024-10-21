@@ -68,6 +68,8 @@ pub struct EnvConfig {
     pub host: IpAddr,
     #[serde(default = "default_port")]
     pub port: u16,
+
+    pub otel_exporter_otlp_endpoint: Option<Url>,
 }
 
 fn default_host() -> IpAddr {

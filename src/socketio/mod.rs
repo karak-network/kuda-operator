@@ -8,6 +8,7 @@ use alloy::{
     transports::Transport,
 };
 use futures_util::FutureExt;
+use metrics::counter;
 use model::{DaLayer, PostingIntent, PostingInterest, TaskResponsibility};
 use rust_socketio::{asynchronous::ClientBuilder, Payload, TransportType};
 use serde_json::json;
@@ -141,6 +142,7 @@ async fn process_posting_intent<T: Transport + Clone, P: Provider<T>>(
     if let Payload::Text(values) = payload {
         let posting_intent = serde_json::from_value::<PostingIntent>(values[0].clone())?;
         tracing::info!("Received task id: {}", posting_intent.task_id);
+        counter!("posting_intent").increment(1);
         // TODO: add custom logic to determine if we want to post data
         let client_balance = kuda_instance
             .kudaAccount(posting_intent.client_address, posting_intent.reward_token)
@@ -181,6 +183,7 @@ async fn process_task_responsibility<T: Transport + Clone, P: Provider<T>>(
     if let Payload::Text(values) = payload {
         let task = serde_json::from_value::<TaskResponsibility>(values[0].clone())?;
         tracing::info!("Received task-responsibility: {}", task.task_id);
+        counter!("task_responsibility").increment(1);
         let blob_data = BlobData::from_str(&task.data)?;
         let context = match task.da_layer {
             DaLayer::Celestia => {
