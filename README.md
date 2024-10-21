@@ -29,56 +29,15 @@ Run the following command to download the binaries:
 ```bash
  curl --proto '=https' --tlsv1.2 -LsSf https://github.com/karak-network/kuda-operator/releases/download/v0.1.0/kuda-operator-installer.sh | sh
 ````
-This installer will install two binaries:
-1. `kuda-operator`: The main KUDA operator binary
-2. `kuda-operator-register`: CLI used for registration
 
 The script will place these binaries in the `$HOME/.karak/bin` directory and add this directory to your `$PATH` variable.
 
-## Key Management
-
-### Type 1: Keystore
-To create a new account, run the following command:
-
-```bash
-geth account new
-```
-
-Use the keystore file path in the `compose.yml`. For example, if the path is:
-
-    /User/name/Library/Ethereum/keystore/UTC--2024-10-10T11-33-57.493706000Z--41001411
-
-Your `volumes` configuration would look like this:
-
-    - volumes:
-      - /User/name/Library/Ethereum/keystore/UTC--2024-10-10T11-33-57.493706000Z--4100141:/keystore
-
-### Type 2: AWS KMS
-Set the following environment variables:
-- `AWS_REGION`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_OPERATOR_KEY_ID`
-- `AWS_EIP4844_KEY_ID`
-
-For more information, refer to the [AWS KMS Documentation](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html).
 
 ## Registering the Operator
 
-### With Keystore
-```bash
-  kuda-operator-register --signer-type keystore --keystore {path-to-keystore} --rpc-url {NETWORK_RPC_URL} \
-  --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
-  --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
-```
-### With AWS KMS
+Follow the steps [here](https://docs.karak.network/operators/registration) for Karak Operator registration.
 
-```bash
- kuda-operator-register --signer-type aws --aws-region {AWS_REGION} --aws-access-key-id {AWS_ACCESS_KEY} \
- --aws-secret-access-key {AWS_ACCESS_KEY} --aws-operator-key-id 08251e9b-0159-43f4-af82-721ff458b8dd --rpc-url {NETWORK_RPC_URL} \
- --kuda-address 0x03Fe1aaDfc42DF23947A922aA924caCDfa16832b --core-address 0xb3E2dA61df98E44457190383e1FF13e1ea13280b \
- --token-address 0x8c843B3A8e9A99680b7611612998799966141841 --vault-impl 0x6dAB3085943Adb6C6785f51bab7EDc1f9e9B1077 --amount 10000
-```
-## Docker Setup
+## Deployment
 
 Fill out the `compose.yml` with the following environment variables:
 
