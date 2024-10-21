@@ -6,12 +6,13 @@ use alloy::{
     transports::Transport,
 };
 
-use crate::contracts::{core::Core::CoreInstance, vault::Vault};
+use crate::contracts::{core::Core::CoreInstance, kuda::Kuda::KudaInstance, vault::Vault};
 
 pub struct Operator<T: Transport + Clone, P: Provider<T>> {
     pub operator_address: Address,
     pub kuda_address: Address,
     pub core_instance: Arc<CoreInstance<T, P>>,
+    pub kuda_instance: Arc<KudaInstance<T, P>>,
     pub provider: Arc<P>,
 }
 
@@ -23,16 +24,35 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
         provider: P,
     ) -> Self {
         let core_instance = Arc::new(CoreInstance::new(core_address, provider.clone()));
+        let kuda_instance = Arc::new(KudaInstance::new(kuda_address, provider.clone()));
         let provider = Arc::new(provider);
         Operator {
             operator_address,
             kuda_address,
             core_instance,
+            kuda_instance,
             provider,
         }
     }
 
     pub async fn register(&self) -> eyre::Result<()> {
+        let receipt = self
+            .kuda_instance
+            .submitOperatorBond()
+            .value(
+                self.provider
+                    .get_storage_at(self.kuda_address, U256::from(5))
+                    .await?,
+            )
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+        tracing::info!(
+            "Operator bond submitted with tx hash: {}",
+            receipt.transaction_hash
+        );
+
         let receipt = self
             .core_instance
             .registerOperatorToDSS(self.kuda_address, Bytes::from_static(&[0u8]))
