@@ -52,10 +52,6 @@ uuid = { version = "1.10.0", features = ["serde", "v4"] }
 name = "kuda-operator"
 path = "src/main.rs"
 
-[[bin]]
-name = "kuda-operator-register"
-path = "src/register.rs"
-
 # The profile that 'cargo dist' will build with
 [profile.dist]
 inherits = "release"
