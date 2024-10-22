@@ -14,6 +14,12 @@ use kuda_operator::{
     socketio::socket_io,
     EnvConfig,
 };
+use metrics::{describe_counter, describe_gauge, gauge};
+use metrics_exporter_prometheus::PrometheusBuilder;
+use opentelemetry::{trace::TracerProvider, KeyValue};
+use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::Resource;
+use opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 use tokio::{net::TcpListener, signal};
 use tokio_util::sync::CancellationToken;
 use tower::ServiceBuilder;
@@ -47,16 +53,69 @@ async fn main() -> eyre::Result<()> {
             - EIP4844_KEYSTORE_PASSWORD [required if SIGNER_TYPE=local]\n\n\
             - EIP4844_TO_ADDRESS\n\
             - EIP4844_RPC_URL\n\
-            - EIP4844_BEACON_URL\n",
+            - EIP4844_BEACON_URL\n
+            - OTEL_EXPORTER_OTLP_ENDPOINT\n",
         )
         .get_matches();
 
     dotenvy::dotenv().ok();
     let config = envy::from_env::<EnvConfig>()?;
-    tracing_subscriber::registry()
-        .with(fmt::layer())
-        .with(EnvFilter::from_default_env())
-        .init();
+
+    // log level filtering here
+    let filter_layer = EnvFilter::from_default_env();
+
+    // fmt layer - printing out logs
+    let fmt_layer = fmt::layer().compact();
+
+    let subscriber = tracing_subscriber::registry()
+        .with(filter_layer)
+        .with(fmt_layer);
+
+    if let Some(otel_endpoint) = config.otel_exporter_otlp_endpoint {
+        let tracer = opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(
+                opentelemetry_otlp::new_exporter()
+                    .http()
+                    .with_endpoint(otel_endpoint),
+            )
+            .with_trace_config(opentelemetry_sdk::trace::Config::default().with_resource(
+                Resource::new(vec![KeyValue::new(SERVICE_NAME, "kuda-operator")]),
+            ))
+            .install_batch(opentelemetry_sdk::runtime::Tokio)?
+            .tracer("kuda-operator");
+
+        // turn our OTLP pipeline into a tracing layer
+        let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
+
+        let subscriber = subscriber.with(otel_layer);
+        subscriber.init();
+    } else {
+        subscriber.init();
+    }
+
+    PrometheusBuilder::new().install()?;
+    describe_counter!(
+        "posting_intent",
+        "Counts the number of posting intents received"
+    );
+    describe_counter!(
+        "task_responsibility",
+        "Counts the number of posting intents assigned"
+    );
+    describe_counter!(
+        "task_responsibility_error",
+        "Counts the number of assigned tasks that failed"
+    );
+    describe_counter!(
+        "task_responsibility_success",
+        "Counts the number of assigned tasks that succeeded"
+    );
+    describe_gauge!(
+        "socket_io_connected",
+        "Indicates if the socket io connection to the aggregator is established"
+    );
+
     let (operator_wallet, operator_signer, eip_4844_signer): (
         EthereumWallet,
         Arc<dyn Signer + Send + Sync + 'static>,
@@ -188,6 +247,7 @@ async fn main() -> eyre::Result<()> {
                 {
                     tracing::error!("Socket IO connection error: {e:?}");
                     *is_connected_clone.write().await = false;
+                    gauge!("socket_io_connected").set(0);
                     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
                 }
             } => {},
