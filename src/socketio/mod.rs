@@ -8,7 +8,7 @@ use alloy::{
     transports::Transport,
 };
 use futures_util::FutureExt;
-use metrics::counter;
+use metrics::{counter, gauge};
 use model::{DaLayer, PostingIntent, PostingInterest, TaskResponsibility};
 use rust_socketio::{asynchronous::ClientBuilder, Payload, TransportType};
 use serde_json::json;
@@ -57,6 +57,7 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
             let is_connected = connected_on_connect.clone();
             async move {
                 *is_connected.write().await = true;
+                gauge!("socket_io_connected").set(1);
                 tracing::info!("Connected to server");
             }
             .boxed()
@@ -65,6 +66,7 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
             let is_connected = connected_on_disconnect.clone();
             async move {
                 *is_connected.write().await = false;
+                gauge!("socket_io_connected").set(0);
                 tracing::info!("Disconnected from server");
             }
             .boxed()
@@ -102,8 +104,14 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
                     &kuda_instance,
                 )
                 .await;
-                if let Err(e) = result {
-                    tracing::error!("Task responsibility error: {e:?}");
+                match result {
+                    Ok(_) => {
+                        counter!("task_responsibility_success").increment(1);
+                    }
+                    Err(e) => {
+                        counter!("task_responsibility_error").increment(1);
+                        tracing::error!("Task responsibility error: {e:?}");
+                    }
                 }
             }
             .boxed()
@@ -124,6 +132,7 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
                 }
             }
         } => {
+            gauge!("socket_io_connected").set(0);
             tracing::info!("Socket IO disconnected");
             return Err(eyre::eyre!("Socket IO disconnected"));
         }

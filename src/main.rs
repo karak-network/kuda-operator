@@ -14,7 +14,7 @@ use kuda_operator::{
     socketio::socket_io,
     EnvConfig,
 };
-use metrics::describe_counter;
+use metrics::{describe_counter, describe_gauge, gauge};
 use metrics_exporter_prometheus::PrometheusBuilder;
 use opentelemetry::{trace::TracerProvider, KeyValue};
 use opentelemetry_otlp::WithExportConfig;
@@ -53,7 +53,8 @@ async fn main() -> eyre::Result<()> {
             - EIP4844_KEYSTORE_PASSWORD [required if SIGNER_TYPE=local]\n\n\
             - EIP4844_TO_ADDRESS\n\
             - EIP4844_RPC_URL\n\
-            - EIP4844_BEACON_URL\n",
+            - EIP4844_BEACON_URL\n
+            - OTEL_EXPORTER_OTLP_ENDPOINT\n",
         )
         .get_matches();
 
@@ -101,6 +102,18 @@ async fn main() -> eyre::Result<()> {
     describe_counter!(
         "task_responsibility",
         "Counts the number of posting intents assigned"
+    );
+    describe_counter!(
+        "task_responsibility_error",
+        "Counts the number of assigned tasks that failed"
+    );
+    describe_counter!(
+        "task_responsibility_success",
+        "Counts the number of assigned tasks that succeeded"
+    );
+    describe_gauge!(
+        "socket_io_connected",
+        "Indicates if the socket io connection to the aggregator is established"
     );
 
     let (operator_wallet, operator_signer, eip_4844_signer): (
@@ -234,6 +247,7 @@ async fn main() -> eyre::Result<()> {
                 {
                     tracing::error!("Socket IO connection error: {e:?}");
                     *is_connected_clone.write().await = false;
+                    gauge!("socket_io_connected").set(0);
                     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
                 }
             } => {},
