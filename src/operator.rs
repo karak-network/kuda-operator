@@ -1,8 +1,9 @@
 use std::{collections::HashMap, sync::Arc};
 
 use alloy::{
-    primitives::{Address, Bytes, U256},
+    primitives::{keccak256, Address, Bytes, U256},
     providers::Provider,
+    sol_types::SolValue,
     transports::Transport,
 };
 
@@ -37,23 +38,34 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
 
     #[tracing::instrument(skip(self))]
     pub async fn register(&self) -> eyre::Result<()> {
+        let operator_bond_storage_slot = U256::from_be_slice(
+            keccak256((self.operator_address, U256::from(9)).abi_encode()).as_ref(),
+        );
         let operator_bond = self
+            .provider
+            .get_storage_at(self.kuda_address, operator_bond_storage_slot)
+            .await?;
+        tracing::info!("Operator bond: {operator_bond}");
+
+        let min_operator_bond = self
             .provider
             .get_storage_at(self.kuda_address, U256::from(5))
             .await?;
-        tracing::info!("Operator bond amount: {operator_bond}");
-        let receipt = self
-            .kuda_instance
-            .submitOperatorBond()
-            .value(operator_bond)
-            .send()
-            .await?
-            .get_receipt()
-            .await?;
-        tracing::info!(
-            "Operator bond submitted with tx hash: {}",
-            receipt.transaction_hash
-        );
+
+        if operator_bond < min_operator_bond {
+            let receipt = self
+                .kuda_instance
+                .submitOperatorBond()
+                .value(operator_bond)
+                .send()
+                .await?
+                .get_receipt()
+                .await?;
+            tracing::info!(
+                "Operator bond submitted with tx hash: {}",
+                receipt.transaction_hash
+            );
+        }
 
         let receipt = self
             .core_instance
