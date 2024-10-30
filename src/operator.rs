@@ -39,8 +39,9 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
     pub async fn register(&self) -> eyre::Result<()> {
         let operator_bond = self
             .provider
-            .get_storage_at(self.operator_address, U256::from(5))
+            .get_storage_at(self.kuda_address, U256::from(5))
             .await?;
+        tracing::info!("Operator bond amount: {operator_bond}");
         let receipt = self
             .kuda_instance
             .submitOperatorBond()
