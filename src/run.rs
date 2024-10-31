@@ -103,7 +103,7 @@ pub async fn run<T: Transport + Clone, P: Provider<T> + Clone + 'static>(
     } else {
         let stake = config.operator.stake().await?;
         tracing::info!("Operator already registered with KUDA");
-        tracing::info!("Stake: {:?}", stake);
+        tracing::info!("Stake: {}", serde_json::to_string_pretty(&stake)?);
     }
 
     let cancellation_token = CancellationToken::new();

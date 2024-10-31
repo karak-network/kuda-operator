@@ -5,8 +5,26 @@ use alloy::{
     providers::Provider,
     transports::Transport,
 };
+use serde::Serialize;
 
-use crate::contracts::{core::Core::CoreInstance, kuda::Kuda::KudaInstance, vault::Vault};
+use crate::contracts::{
+    core::Core::CoreInstance, kuda::Kuda::KudaInstance, vault::Vault::VaultInstance,
+};
+
+#[derive(Debug, Serialize)]
+pub struct Vault {
+    pub symbol: String,
+    pub name: String,
+    #[serde(serialize_with = "serialize_u256")]
+    pub amount: U256,
+}
+
+pub fn serialize_u256<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serializer.serialize_str(&value.to_string())
+}
 
 pub struct Operator<T: Transport + Clone, P: Provider<T>> {
     pub operator_address: Address,
@@ -81,7 +99,7 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
 
     // TODO: Normalize to ETH
     #[tracing::instrument(skip(self))]
-    pub async fn stake(&self) -> eyre::Result<HashMap<String, U256>> {
+    pub async fn stake(&self) -> eyre::Result<HashMap<Address, Vault>> {
         let operator_vaults = self
             .core_instance
             .fetchVaultsStakedInDSS(self.operator_address, self.kuda_address)
@@ -89,10 +107,17 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
             .await?
             .vaults;
         let mut stake = HashMap::new();
-        for vault in operator_vaults {
-            let vault_instance = Vault::new(vault, self.provider.clone());
+        for vault_address in operator_vaults {
+            let vault_instance = VaultInstance::new(vault_address, self.provider.clone());
             let symbol = vault_instance.symbol().call().await?._0;
-            stake.insert(symbol, vault_instance.totalAssets().call().await?._0);
+            let name = vault_instance.name().call().await?._0;
+            let amount = vault_instance.totalAssets().call().await?._0;
+            let vault = Vault {
+                symbol,
+                name,
+                amount,
+            };
+            stake.insert(vault_address, vault);
         }
         Ok(stake)
     }
