@@ -13,4 +13,4 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=builder /operator/target/release/kuda-operator /kuda-operator
 EXPOSE 8080
-CMD ["/kuda-operator"]
+CMD ["/kuda-operator run"]

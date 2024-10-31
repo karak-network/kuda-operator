@@ -32,8 +32,42 @@ Run the following command to download the binaries:
 
 The script will place these binaries in the `$HOME/.karak/bin` directory and add this directory to your `$PATH` variable.
 
+## Registering the Operator with KUDA
 
-## Registering the Operator
+Run the following command to register the operator:
+
+- Using local keystore:
+
+```bash
+kuda-operator register \
+    --kms local \
+    --operator-keystore-path <OPERATOR_KEYSTORE_PATH> \
+    --kuda-contract-address <KUDA_CONTRACT_ADDRESS> \
+    --core-contract-address <CORE_CONTRACT_ADDRESS> \
+    --kuda-rpc_url <KUDA_RPC_URL>
+```
+
+- Using AWS KMS:
+
+```bash
+kuda-operator register \
+    --kms aws \
+    --aws-region <AWS_REGION> \
+    --aws-access-key-id <AWS_ACCESS_KEY_ID> \
+    --aws-secret-access-key <AWS_SECRET_ACCESS_KEY> \
+    --aws-operator-key-id <AWS_OPERATOR_KEY_ID> \
+    --kuda-contract-address <KUDA_CONTRACT_ADDRESS> \
+    --core-contract-address <CORE_CONTRACT_ADDRESS> \
+    --kuda-rpc_url <KUDA_RPC_URL>
+```
+
+Alternatively, you can put those arguments in an `.env` file or directly export to your environment and run:
+
+```bash
+kuda-operator register
+```
+
+## Registering the Operator with Core
 
 Follow the steps [here](https://docs.karak.network/operators/registration) for Karak Operator registration.
 
@@ -45,7 +79,7 @@ Fill out the `compose.yml` with the following environment variables:
     KUDA_RPC_URL: <URL of RPC (Sepolia or Mainnet)>
     CELESTIA_RPC_URL: <RPC URL of Celestia>
     CELESTIA_AUTH_TOKEN: <TOKEN from Celestia>
-    SIGNER_TYPE: <'aws' for AWS KMS or 'keystore' for local keystore>
+    KMS: <'aws' for AWS KMS or 'keystore' for local keystore>
     AWS_REGION: <AWS region, e.g., 'ap-south-1'>
     AWS_ACCESS_KEY_ID: <AWS Access Key>
     AWS_SECRET_ACCESS_KEY: <AWS Secret Key>
@@ -75,14 +109,14 @@ Fill out the `compose.yml` with the following environment variables:
 Alternatively, you can run the KUDA operator binary directly:
 
 1. Fill out the environment variables in an `.env` file.
-2. run 
-```bash 
+2. run
+```bash
 source .env
  ```
 3. Run the binary:
 
-```bash 
-kuda-operator
+```bash
+kuda-operator run
 ```
 
 ---

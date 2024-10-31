@@ -1,314 +1,276 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::IpAddr, path::PathBuf, sync::Arc};
 
 use alloy::{
     network::{EthereumWallet, TxSigner},
+    primitives::Address,
     providers::ProviderBuilder,
-    signers::{aws::AwsSigner, local::PrivateKeySigner, Signature, Signer},
 };
-use aws_config::{BehaviorVersion, Region};
-use clap::Command;
+use clap::{
+    builder::{styling::AnsiColor, Styles},
+    Parser, Subcommand,
+};
 use kuda_operator::{
-    contracts::kuda::Kuda,
+    contracts::kuda::Kuda::{self},
     da::{celestia::CelestiaClient, eip4844::Eip4844Client},
     operator::Operator,
-    socketio::socket_io,
-    EnvConfig,
+    register::{register, RegisterConfig},
+    run::{run, RunConfig},
+    Kms,
 };
-use metrics::{describe_counter, describe_gauge, gauge};
-use metrics_exporter_prometheus::PrometheusBuilder;
-use opentelemetry::{trace::TracerProvider, KeyValue};
-use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::Resource;
-use opentelemetry_semantic_conventions::resource::SERVICE_NAME;
-use tokio::{net::TcpListener, signal};
-use tokio_util::sync::CancellationToken;
-use tower::ServiceBuilder;
-use tower_governor::{governor::GovernorConfig, GovernorLayer};
-use tower_http::trace::{self, TraceLayer};
-use tracing::Level;
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use url::Url;
+
+const CLAP_STYLING: Styles = Styles::styled()
+    .header(AnsiColor::Yellow.on_default())
+    .usage(AnsiColor::Green.on_default())
+    .literal(AnsiColor::Green.on_default())
+    .placeholder(AnsiColor::Green.on_default());
+
+#[allow(clippy::large_enum_variant)]
+#[derive(Subcommand)]
+enum KudaOperatorCommand {
+    Run {
+        #[arg(short, long, env)]
+        aggregator_url: Url,
+
+        #[arg(long, env)]
+        celestia_rpc_url: Url,
+
+        #[arg(long, env)]
+        celestia_auth_token: Option<String>,
+
+        #[arg(long, env, required_if_eq("kms", "aws"))]
+        aws_eip4844_key_id: Option<String>,
+
+        #[arg(long, env, required_if_eq("kms", "local"))]
+        eip4844_keystore_path: Option<PathBuf>,
+
+        #[arg(long, env, required_if_eq("kms", "local"))]
+        eip4844_keystore_password: Option<String>,
+
+        #[arg(long, env)]
+        eip4844_to_address: Address,
+
+        #[arg(long, env)]
+        eip4844_rpc_url: Url,
+
+        #[arg(long, env)]
+        eip4844_beacon_url: Url,
+
+        #[arg(long, env)]
+        otel_exporter_otlp_endpoint: Option<Url>,
+
+        #[arg(long, env, default_value = "0.0.0.0")]
+        host: IpAddr,
+
+        #[arg(long, env, default_value = "8080")]
+        port: u16,
+    },
+
+    Register,
+}
+
+#[derive(Parser)]
+#[command(version, about, long_about, styles = CLAP_STYLING)]
+struct KudaOperator {
+    #[command(subcommand)]
+    command: KudaOperatorCommand,
+
+    #[arg(short, long, env, default_value = "local", global = true)]
+    kms: Kms,
+
+    #[arg(long, env, required_if_eq("kms", "aws"), global = true)]
+    aws_region: Option<String>,
+
+    #[arg(long, env, required_if_eq("kms", "aws"), global = true)]
+    aws_access_key_id: Option<String>,
+
+    #[arg(long, env, required_if_eq("kms", "aws"), global = true)]
+    aws_secret_access_key: Option<String>,
+
+    #[arg(long, env, required_if_eq("kms", "aws"), global = true)]
+    aws_operator_key_id: Option<String>,
+
+    #[arg(long, env, required_if_eq("kms", "local"), global = true)]
+    operator_keystore_path: Option<PathBuf>,
+
+    #[arg(long, env, required_if_eq("kms", "local"), global = true)]
+    operator_keystore_password: Option<String>,
+
+    #[arg(
+        long,
+        env,
+        default_value = "0x0000000000000000000000000000000000000000",
+        global = true
+    )]
+    kuda_contract_address: Address,
+
+    #[arg(
+        long,
+        env,
+        default_value = "0x0000000000000000000000000000000000000000",
+        global = true
+    )]
+    core_contract_address: Address,
+
+    #[arg(long, env, default_value = "http://localhost:8545", global = true)]
+    kuda_rpc_url: Url,
+}
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    Command::new("kuda-operator")
-        .version(env!("CARGO_PKG_VERSION"))
-        .about("KUDA Operator")
-        .after_long_help(
-            "You'll need to set the following environment variables:\n\
-            - AGGREGATOR_URL\n\n\
-            - CELESTIA_RPC_URL\n\
-            - CELESTIA_AUTH_TOKEN\n\n\
-            - KUDA_CONTRACT_ADDRESS\n\
-            - CORE_CONTRACT_ADDRESS\n\
-            - KUDA_RPC_URL\n\n\
-            - SIGNER_TYPE [possible values: local, aws]\n\n\
-            - AWS_REGION [required if SIGNER_TYPE=aws]\n\
-            - AWS_ACCESS_KEY_ID [required if SIGNER_TYPE=aws]\n\
-            - AWS_SECRET_ACCESS_KEY [required if SIGNER_TYPE=aws]\n\
-            - AWS_OPERATOR_KEY_ID [required if SIGNER_TYPE=aws]\n\
-            - AWS_EIP4844_KEY_ID [required if SIGNER_TYPE=aws]\n\n\
-            - OPERATOR_KEYSTORE_PATH [required if SIGNER_TYPE=local]\n\
-            - OPERATOR_KEYSTORE_PASSWORD [required if SIGNER_TYPE=local]\n\
-            - EIP4844_KEYSTORE_PATH [required if SIGNER_TYPE=local]\n\
-            - EIP4844_KEYSTORE_PASSWORD [required if SIGNER_TYPE=local]\n\n\
-            - EIP4844_TO_ADDRESS\n\
-            - EIP4844_RPC_URL\n\
-            - EIP4844_BEACON_URL\n
-            - OTEL_EXPORTER_OTLP_ENDPOINT\n",
-        )
-        .get_matches();
-
     dotenvy::dotenv().ok();
-    let config = envy::from_env::<EnvConfig>()?;
 
-    // log level filtering here
-    let filter_layer = EnvFilter::from_default_env();
+    let cli = KudaOperator::parse();
 
-    // fmt layer - printing out logs
-    let fmt_layer = fmt::layer().compact();
-
-    let subscriber = tracing_subscriber::registry()
-        .with(filter_layer)
-        .with(fmt_layer);
-
-    if let Some(otel_endpoint) = config.otel_exporter_otlp_endpoint {
-        let tracer = opentelemetry_otlp::new_pipeline()
-            .tracing()
-            .with_exporter(
-                opentelemetry_otlp::new_exporter()
-                    .http()
-                    .with_endpoint(otel_endpoint),
-            )
-            .with_trace_config(opentelemetry_sdk::trace::Config::default().with_resource(
-                Resource::new(vec![KeyValue::new(SERVICE_NAME, "kuda-operator")]),
-            ))
-            .install_batch(opentelemetry_sdk::runtime::Tokio)?
-            .tracer("kuda-operator");
-
-        // turn our OTLP pipeline into a tracing layer
-        let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
-
-        let subscriber = subscriber.with(otel_layer);
-        subscriber.init();
-    } else {
-        subscriber.init();
-    }
-
-    PrometheusBuilder::new().install()?;
-    describe_counter!(
-        "posting_intent",
-        "Counts the number of posting intents received"
-    );
-    describe_counter!(
-        "task_responsibility",
-        "Counts the number of posting intents assigned"
-    );
-    describe_counter!(
-        "task_responsibility_error",
-        "Counts the number of assigned tasks that failed"
-    );
-    describe_counter!(
-        "task_responsibility_success",
-        "Counts the number of assigned tasks that succeeded"
-    );
-    describe_gauge!(
-        "socket_io_connected",
-        "Indicates if the socket io connection to the aggregator is established"
-    );
-
-    let (operator_wallet, operator_signer, eip_4844_signer): (
-        EthereumWallet,
-        Arc<dyn Signer + Send + Sync + 'static>,
-        Arc<dyn TxSigner<Signature> + Send + Sync + 'static>,
-    ) = match config.signer_type {
-        kuda_operator::SignerType::Local => {
-            let operator_signer = match config.operator_keystore_path {
-                Some(operator_keystore_path) => {
-                    let operator_keystore_password = config.operator_keystore_password.expect(
-                            "Operator keystore password must be set when using local signer and keystore",
-                        );
-
-                    PrivateKeySigner::decrypt_keystore(
-                        operator_keystore_path,
-                        operator_keystore_password,
-                    )?
-                }
-                None => config.operator_private_key.expect(
-                    "Either operator keystore or keypair must be set when using local signer",
-                ),
-            };
-            let operator_wallet = EthereumWallet::from(operator_signer.clone());
-
-            let eip_4844_signer = match config.eip4844_keystore_path {
-                Some(eip4844_keystore_path) => {
-                    let eip4844_keystore_password = config
-                        .eip4844_keystore_password
-                        .expect("EIP-4844 keystore password must be set when using local signer and keystore");
-                    PrivateKeySigner::decrypt_keystore(
-                        eip4844_keystore_path,
-                        eip4844_keystore_password,
-                    )?
-                }
-                None => config.eip4844_private_key.expect(
-                    "Either EIP-4844 keystore or keypair must be set when using local signer",
-                ),
-            };
-
-            (
-                operator_wallet,
-                Arc::new(operator_signer),
-                Arc::new(eip_4844_signer),
-            )
+    let operator_kms = match cli.kms {
+        Kms::Local => {
+            let operator_keystore_path = cli
+                .operator_keystore_path
+                .expect("Operator keystore path must be set when using local signer and keystore");
+            let operator_keystore_password = cli.operator_keystore_password.expect(
+                "Operator keystore password must be set when using local signer and keystore",
+            );
+            kuda_operator::kms::Kms::Local {
+                keystore: operator_keystore_path,
+                passphrase: Some(operator_keystore_password),
+            }
         }
-        kuda_operator::SignerType::Aws => {
-            let region = config
+        Kms::Aws => {
+            let aws_region = cli
                 .aws_region
+                .clone()
                 .expect("AWS region must be set when using AWS signer");
-            config
+            let aws_access_key_id = cli
                 .aws_access_key_id
+                .clone()
                 .expect("AWS access key ID must be set when using AWS signer");
-            config
+            let aws_secret_access_key = cli
                 .aws_secret_access_key
+                .clone()
                 .expect("AWS secret access key must be set when using AWS signer");
-            let aws_config = aws_config::defaults(BehaviorVersion::latest())
-                .region(Region::new(region))
-                .load()
-                .await;
-            let operator_private_key_id = config
+            let aws_operator_key_id = cli
                 .aws_operator_key_id
+                .clone()
                 .expect("Operator private key ID must be set when using AWS signer");
-            let eip4844_private_key_id = config
-                .aws_eip4844_key_id
-                .expect("EIP-4844 private key ID must be set when using AWS signer");
-            let client = aws_sdk_kms::Client::new(&aws_config);
-            let operator_signer =
-                AwsSigner::new(client.clone(), operator_private_key_id, None).await?;
-            let operator_wallet = EthereumWallet::from(operator_signer.clone());
-            let eip4844_signer = AwsSigner::new(client, eip4844_private_key_id, None).await?;
-            (
-                operator_wallet,
-                Arc::new(operator_signer),
-                Arc::new(eip4844_signer),
-            )
+            kuda_operator::kms::Kms::Aws {
+                region: aws_region,
+                access_key_id: aws_access_key_id,
+                secret_access_key: aws_secret_access_key,
+                key_id: aws_operator_key_id,
+            }
         }
     };
+
+    let operator_signer = kuda_operator::kms::get_signer(operator_kms).await?;
     let operator_address = operator_signer.address();
+    let operator_wallet = EthereumWallet::from(operator_signer.clone());
+
     let provider = ProviderBuilder::new()
         .with_recommended_fillers()
         .wallet(operator_wallet)
-        .on_http(config.kuda_rpc_url);
-    let kuda_instance = Arc::new(Kuda::new(config.kuda_contract_address, provider.clone()));
-    let eip4844_client = Arc::new(Eip4844Client::new(
-        eip_4844_signer,
-        config.eip4844_to_address,
-        config.eip4844_rpc_url,
-        config.eip4844_beacon_url,
-    )?);
-    let celestia_client = Arc::new(
-        CelestiaClient::new(&config.celestia_rpc_url, Some(&config.celestia_auth_token)).await?,
-    );
+        .on_http(cli.kuda_rpc_url);
+
+    if cli.kuda_contract_address == Address::default() {
+        tracing::error!("KUDA contract address must be set");
+        return Err(eyre::eyre!("KUDA contract address must be set"));
+    }
+    if cli.core_contract_address == Address::default() {
+        tracing::error!("Core contract address must be set");
+        return Err(eyre::eyre!("Core contract address must be set"));
+    }
+    let kuda_instance = Arc::new(Kuda::new(cli.kuda_contract_address, provider.clone()));
 
     let operator = Arc::new(Operator::new(
         operator_address,
-        config.kuda_contract_address,
-        config.core_contract_address,
-        provider,
+        cli.kuda_contract_address,
+        cli.core_contract_address,
+        provider.clone(),
     ));
 
-    if !operator.is_registered().await? {
-        tracing::info!("Operator not registered with KUDA, registering");
-        operator.register().await?;
-    } else {
-        let stake = operator.stake().await?;
-        tracing::info!("Operator already registered with KUDA");
-        tracing::info!("Stake: {:?}", stake);
-    }
-
-    let cancellation_token = CancellationToken::new();
-    let socket_io_cancel = cancellation_token.clone();
-
-    let socket_url = config.aggregator_url.clone();
-    let is_connected = Arc::new(tokio::sync::RwLock::new(false));
-    let is_connected_clone = is_connected.clone();
-    let socket_io_task = tokio::spawn(async move {
-        tokio::select! {
-            biased;
-            _ = async {
-                while let Err(e) = socket_io(
-                    socket_url.clone(),
-                    celestia_client.clone(),
-                    eip4844_client.clone(),
-                    operator_signer.clone(),
-                    kuda_instance.clone(),
-                    socket_io_cancel.clone(),
-                    is_connected_clone.clone(),
-                )
-                .await
-                {
-                    tracing::error!("Socket IO connection error: {e:?}");
-                    *is_connected_clone.write().await = false;
-                    gauge!("socket_io_connected").set(0);
-                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    match cli.command {
+        KudaOperatorCommand::Run {
+            aggregator_url,
+            celestia_rpc_url,
+            celestia_auth_token,
+            aws_eip4844_key_id,
+            eip4844_keystore_path,
+            eip4844_keystore_password,
+            eip4844_to_address,
+            eip4844_rpc_url,
+            eip4844_beacon_url,
+            otel_exporter_otlp_endpoint,
+            host,
+            port,
+        } => {
+            let eip4844_kms = match cli.kms {
+                Kms::Local => {
+                    let eip4844_keystore_path = eip4844_keystore_path.expect(
+                        "EIP-4844 keystore path must be set when using local signer and keystore",
+                    );
+                    let eip4844_keystore_password = eip4844_keystore_password.expect(
+                        "EIP-4844 keystore password must be set when using local signer and keystore",
+                    );
+                    kuda_operator::kms::Kms::Local {
+                        keystore: eip4844_keystore_path,
+                        passphrase: Some(eip4844_keystore_password),
+                    }
                 }
-            } => {},
-            _ = socket_io_cancel.cancelled() => {
-                tracing::info!("Socket IO task cancelled");
-            },
+                Kms::Aws => {
+                    let aws_region = cli
+                        .aws_region
+                        .expect("AWS region must be set when using AWS signer");
+                    let aws_access_key_id = cli
+                        .aws_access_key_id
+                        .expect("AWS access key ID must be set when using AWS signer");
+                    let aws_secret_access_key = cli
+                        .aws_secret_access_key
+                        .expect("AWS secret access key must be set when using AWS signer");
+                    let aws_eip4844_key_id = aws_eip4844_key_id
+                        .expect("EIP-4844 private key ID must be set when using AWS signer");
+                    kuda_operator::kms::Kms::Aws {
+                        region: aws_region,
+                        access_key_id: aws_access_key_id,
+                        secret_access_key: aws_secret_access_key,
+                        key_id: aws_eip4844_key_id,
+                    }
+                }
+            };
+            let eip4844_signer = kuda_operator::kms::get_signer(eip4844_kms).await?;
+            let eip4844_client = Arc::new(Eip4844Client::new(
+                eip4844_signer,
+                eip4844_to_address,
+                eip4844_rpc_url,
+                eip4844_beacon_url,
+            )?);
+            let celestia_client = Arc::new(
+                CelestiaClient::new(&celestia_rpc_url, celestia_auth_token.as_deref()).await?,
+            );
+
+            let config = RunConfig {
+                aggregator_url,
+                operator_signer,
+                kuda_instance,
+                operator,
+                celestia_client,
+                eip4844_client,
+                otel_exporter_otlp_endpoint,
+                host,
+                port,
+            };
+
+            run(config).await?;
         }
-    });
+        KudaOperatorCommand::Register => {
+            let config = RegisterConfig {
+                operator,
+                kuda_address: cli.kuda_contract_address,
+                operator_address,
+                provider,
+            };
 
-    let governor_config = Arc::new(GovernorConfig::default());
-    let app = kuda_operator::routes(is_connected.clone())
-        .layer(
-            TraceLayer::new_for_http()
-                .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
-                .on_request(trace::DefaultOnRequest::new().level(Level::INFO))
-                .on_response(trace::DefaultOnResponse::new().level(Level::INFO))
-                .on_failure(trace::DefaultOnFailure::new().level(Level::ERROR)),
-        )
-        .layer(ServiceBuilder::new().layer(GovernorLayer {
-            config: governor_config.clone(),
-        }));
-
-    let listener = TcpListener::bind((config.host, config.port)).await?;
-
-    axum::serve(
-        listener,
-        app.into_make_service_with_connect_info::<SocketAddr>(),
-    )
-    .with_graceful_shutdown(shutdown_signal())
-    .await?;
-
-    cancellation_token.cancel();
-    let _ = socket_io_task.await;
+            register(config).await?;
+        }
+    }
 
     Ok(())
-}
-
-async fn shutdown_signal() {
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C handler");
-    };
-
-    #[cfg(unix)]
-    let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("failed to install signal handler")
-            .recv()
-            .await;
-    };
-
-    #[cfg(not(unix))]
-    let terminate = std::future::pending::<()>();
-
-    tokio::select! {
-        _ = ctrl_c => {
-            tracing::info!("Received Ctrl+C, shutting down")
-        },
-        _ = terminate => {
-            tracing::info!("Received SIGTERM, shutting down")
-        },
-    }
 }
