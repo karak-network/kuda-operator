@@ -19,6 +19,7 @@ use url::Url;
 use crate::{
     contracts::kuda::Kuda::KudaInstance,
     da::{celestia::CelestiaClient, eip4844::Eip4844Client, BlobData, Submitter},
+    kms::KmsSigner,
 };
 
 pub mod model;
@@ -27,12 +28,12 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
     socket_url: Url,
     celestia_client: Arc<CelestiaClient>,
     eip4844_client: Arc<Eip4844Client>,
-    operator_signer: Arc<dyn Signer + Send + Sync + 'static>,
+    operator_signer: Arc<dyn KmsSigner + Send + Sync + 'static>,
     kuda_instance: Arc<KudaInstance<T, P>>,
     cancellation_token: CancellationToken,
     is_connected: Arc<RwLock<bool>>,
 ) -> eyre::Result<()> {
-    let operator_address = operator_signer.address();
+    let operator_address = Signer::address(&*operator_signer);
     let message = "connection";
     let signature = hex::encode(
         operator_signer
@@ -186,7 +187,7 @@ async fn process_task_responsibility<T: Transport + Clone, P: Provider<T>>(
     payload: Payload,
     celestia_client: &CelestiaClient,
     eip4844_client: &Eip4844Client,
-    operator_signer: Arc<dyn Signer + Send + Sync + 'static>,
+    operator_signer: Arc<dyn KmsSigner + Send + Sync + 'static>,
     kuda_instance: &KudaInstance<T, P>,
 ) -> eyre::Result<()> {
     if let Payload::Text(values) = payload {
@@ -208,7 +209,7 @@ async fn process_task_responsibility<T: Transport + Clone, P: Provider<T>>(
 
         let receipt = kuda_instance
             .submitReceipt(
-                operator_signer.address(),
+                Signer::address(&*operator_signer),
                 FixedBytes::from(task.task_id.as_bytes()),
                 Bytes::copy_from_slice(&signature.as_bytes()),
                 task.commitment.clone(),

@@ -12,13 +12,14 @@ use alloy::{
         Identity, Provider, ProviderBuilder, ReqwestProvider,
     },
     rpc::types::{BlockTransactionsKind, TransactionRequest},
-    signers::Signature,
     transports::http::ReqwestTransport,
 };
 use eyre::OptionExt;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 use url::Url;
+
+use crate::kms::KmsSigner;
 
 use super::{BlobData, Submitter};
 
@@ -173,7 +174,7 @@ type RecommendedProvider = FillProvider<
 >;
 
 pub struct Eip4844Client {
-    wallet: Arc<dyn TxSigner<Signature> + Send + Sync + 'static>,
+    from: Address,
     to: Address,
     provider: RecommendedProvider,
     beacon_url: Url,
@@ -182,7 +183,7 @@ pub struct Eip4844Client {
 
 impl Eip4844Client {
     pub fn new(
-        wallet: Arc<dyn TxSigner<Signature> + Send + Sync + 'static>,
+        signer: Arc<dyn KmsSigner + Send + Sync + 'static>,
         to: Address,
         rpc_url: Url,
         beacon_url: Url,
@@ -197,12 +198,13 @@ impl Eip4844Client {
                 ),
             ),
         );
+        let from = signer.address();
         let provider = ProviderBuilder::new()
             .filler(filler)
-            .wallet(EthereumWallet::from(wallet.clone()))
+            .wallet(EthereumWallet::from(signer))
             .on_http(rpc_url);
         Ok(Self {
-            wallet,
+            from,
             to,
             provider,
             beacon_url,
@@ -219,8 +221,6 @@ impl Submitter for Eip4844Client {
         provided_commitment: &str,
         blob_data: BlobData,
     ) -> eyre::Result<Self::Receipt> {
-        let from = self.wallet.address();
-
         // Create a sidecar with some data.
         let sidecar: SidecarBuilder<TerminationCoder> = SidecarBuilder::from_slice(&blob_data.data);
         let sidecar = sidecar.build()?;
@@ -232,7 +232,7 @@ impl Submitter for Eip4844Client {
         }
 
         let tx = TransactionRequest::default()
-            .with_from(from)
+            .with_from(self.from)
             .with_to(self.to)
             .with_blob_sidecar(sidecar);
 

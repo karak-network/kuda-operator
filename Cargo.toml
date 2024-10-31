@@ -34,7 +34,12 @@ metrics = "0.24.0"
 metrics-exporter-prometheus = "0.16.0"
 nmt-rs = { version = "0.2.3", features = ["borsh"] }
 opentelemetry = { version = "0.26.0", features = ["trace"] }
-opentelemetry-otlp = { version = "0.26.0", features = ["http", "http-json", "opentelemetry-http", "reqwest-client"] }
+opentelemetry-otlp = { version = "0.26.0", features = [
+    "http",
+    "http-json",
+    "opentelemetry-http",
+    "reqwest-client",
+] }
 opentelemetry-semantic-conventions = "0.26.0"
 opentelemetry_sdk = { version = "0.26.0", features = ["rt-tokio"] }
 regex = "1.10.5"
@@ -58,10 +63,6 @@ uuid = { version = "1.10.0", features = ["serde", "v4"] }
 [[bin]]
 name = "kuda-operator"
 path = "src/main.rs"
-
-[[bin]]
-name = "kuda-operator-register"
-path = "src/register.rs"
 
 # The profile that 'cargo dist' will build with
 [profile.dist]
