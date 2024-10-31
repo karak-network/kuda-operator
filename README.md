@@ -79,7 +79,7 @@ Fill out the `compose.yml` with the following environment variables:
     KUDA_RPC_URL: <URL of RPC (Sepolia or Mainnet)>
     CELESTIA_RPC_URL: <RPC URL of Celestia>
     CELESTIA_AUTH_TOKEN: <TOKEN from Celestia>
-    SIGNER_TYPE: <'aws' for AWS KMS or 'keystore' for local keystore>
+    KMS: <'aws' for AWS KMS or 'keystore' for local keystore>
     AWS_REGION: <AWS region, e.g., 'ap-south-1'>
     AWS_ACCESS_KEY_ID: <AWS Access Key>
     AWS_SECRET_ACCESS_KEY: <AWS Secret Key>
