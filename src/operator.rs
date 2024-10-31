@@ -56,7 +56,7 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
     pub async fn register(&self) -> eyre::Result<TxHash> {
         let receipt = self
             .core_instance
-            .registerOperatorToDSS(self.kuda_address, Bytes::from_static(&[0u8]))
+            .registerOperatorToDSS(self.kuda_address, Bytes::default())
             .send()
             .await?
             .get_receipt()
