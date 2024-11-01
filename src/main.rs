@@ -44,7 +44,7 @@ enum KudaOperatorCommand {
         #[arg(long, env, required_if_eq("kms", "local"))]
         eip4844_keystore_path: Option<PathBuf>,
 
-        #[arg(long, env, required_if_eq("kms", "local"))]
+        #[arg(long, env)]
         eip4844_keystore_password: Option<String>,
 
         #[arg(long, env)]
@@ -93,7 +93,7 @@ struct KudaOperator {
     #[arg(long, env, required_if_eq("kms", "local"), global = true)]
     operator_keystore_path: Option<PathBuf>,
 
-    #[arg(long, env, required_if_eq("kms", "local"), global = true)]
+    #[arg(long, env, global = true)]
     operator_keystore_password: Option<String>,
 
     #[arg(
