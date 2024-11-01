@@ -22,20 +22,31 @@ This guide will help you set up and run the KUDA as an Operator.
 - Aggregator server URL
 - RPC server URLs (Celestia, Network URLs)
 
-## Prerequisites
+## Karak CLI Installation
 
-- Docker
-- Geth (to create keystore wallet)
+Run the following command to install the Karak CLI:
 
-## Installation
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/karak-network/karak-rs/releases/download/karak-cli-v0.2.3/karak-cli-installer.sh | sh
+```
 
-Run the following command to download the binaries:
+## KUDA Operator Installation
+
+Run the following command to install the KUDA operator binary:
 
 ```bash
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/karak-network/kuda-operator/releases/download/v0.2.1/kuda-operator-installer.sh | sh
-````
+```
 
-The script will place these binaries in the `$HOME/.karak/bin` directory and add this directory to your `$PATH` variable.
+The script will place the binary in the `$HOME/.karak/bin` directory and add this directory to your `$PATH` variable.
+
+## (Optional) Create a local keystore
+
+If you want to use a local keystore, you can create one using the following command:
+
+```bash
+karak keypair generate -s local -c secp256k1
+```
 
 ## Registering the Operator with KUDA
 
@@ -72,13 +83,100 @@ Alternatively, you can put those arguments in an `.env` file or directly export 
 kuda-operator register
 ```
 
-## Registering the Operator with Core
+## Create vault(s)
 
-Follow the steps [here](https://docs.karak.network/operators/registration) for Karak Operator registration.
+Run the following command to create a vault:
+
+- Using local keystore:
+
+```bash
+karak operator create-vault \
+    --assets <ASSETS> \
+    --core-address <CORE_ADDRESS> \
+    --secp256k1-keystore-path <KEYSTORE_PATH> \
+    --rpc-url <RPC_URL>
+```
+
+where `<ASSETS>` is a comma-separated list of asset addresses.
+
+For Sepolia, you can use these addresses:
+
+1. Core contract address: `0xb3E2dA61df98E44457190383e1FF13e1ea13280b`
+
+2. Allow listed assets:
+    - `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`
+    - `0x8c843B3A8e9A99680b7611612998799966141841`
+    - `0xac8910BEf6c73d30B79e7045ea4fB43fF94833eE`
+    - `0xf0091d2b18BabAE32A1B24944f653e69Ac99b7d2`
+
+## (Optional) Deposit to vault
+
+Run the following command to deposit to a vault:
+
+```bash
+karak operator deposit-to-vault \
+    --vault-address <VAULT_ADDRESS> \
+    --amount <AMOUNT> \
+    --secp256k1-keystore-path <KEYSTORE_PATH>
+    --rpc-url <RPC_URL>
+```
+
+where `<VAULT_ADDRESS>` is one of the vault addresses created in the previous step.
+
+Note that you'll need to own at least `AMOUNT` of the asset to deposit.
+You can get some of the USDC asset (`0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`) from [here](https://faucet.circle.com/).
+For the other assets, you can mint them yourself.
+
+<!-- TODO: Add mint command -->
+
+## Stake the vault to KUDA
+
+### Request update stake
+
+First, we request an update stake by running:
+
+```bash
+karak operator request-stake-update \
+    --vault-address <VAULT_ADDRESS> \
+    --dss-address <KUDA_ADDRESS> \
+    --stake-update-type stake \
+    --core-address <CORE_ADDRESS> \
+    --secp256k1-keystore-path <KEYSTORE_PATH> \
+    --rpc-url <RPC_URL>
+```
+
+This command will return a nonce and a start timestamp in the output.
+
+### Finalize stake update
+
+Then, we finalize the stake update by running:
+
+```bash
+karak operator finalize-stake-update \
+    --vault-address <VAULT_ADDRESS> \
+    --dss-address <KUDA_ADDRESS> \
+    --stake-update-type stake \
+    --nonce <NONCE> \
+    --start-timestamp <START_TIMESTAMP> \
+    --core-address <CORE_ADDRESS> \
+    --secp256k1-keystore-path <KEYSTORE_PATH> \
+    --rpc-url <RPC_URL>
+```
+
+where
+
+- `<VAULT_ADDRESS>` is one of the vault addresses created earlier
+- `<NONCE>` is the nonce returned from the previous command.
+- `<START_TIMESTAMP>` is the start timestamp returned from the previous command.
+
+For Sepolia, you can use these addresses:
+
+- `KUDA_ADDRESS`: `0x0e64c3c675dae7537A9fC1E925E2a87e164f7f53`
+- `CORE_ADDRESS`: `0xb3E2dA61df98E44457190383e1FF13e1ea13280b`
 
 ## Deployment
 
-Fill out the `compose.yml` with the following environment variables:
+Fill out the `compose.yml` or an `.env` file with the following environment variables:
 
 ```yaml
 AGGREGATOR_URL: <URL of Aggregator server>
