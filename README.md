@@ -52,7 +52,6 @@ karak keypair generate -s local -c secp256k1
 
 Run the following command to register the operator:
 
-- Using local keystore:
 
 ```bash
 kuda-operator register \
@@ -174,6 +173,14 @@ For Sepolia, you can use these addresses:
 - `KUDA_ADDRESS`: `0x0e64c3c675dae7537A9fC1E925E2a87e164f7f53`
 - `CORE_ADDRESS`: `0xb3E2dA61df98E44457190383e1FF13e1ea13280b`
 
+Note: You can also use AWS KMS instead of a local keystore. Run
+
+```bash
+karak operator --help
+```
+
+to see all the available options.
+
 ## Deployment
 
 Fill out the `compose.yml` or an `.env` file with the following environment variables:
@@ -200,6 +207,8 @@ EIP4844_RPC_URL: <RPC URL of Network (Sepolia or Mainnet)>
 EIP4844_BEACON_URL: <RPC URL of Network (Sepolia or Mainnet)>
 RUST_LOG: "info" (Other log levels: error, debug, warn, trace)
 ```
+
+The aggregator URL for Sepolia is `http://35.154.70.183:8081/`.
 
 ### Run the Docker Container
 
