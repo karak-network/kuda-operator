@@ -10,7 +10,7 @@ use aws_sdk_kms::config::{Credentials, SharedCredentialsProvider};
 pub enum Kms {
     Local {
         keystore: PathBuf,
-        passphrase: Option<String>,
+        passphrase: String,
     },
     Aws {
         region: String,
@@ -32,10 +32,6 @@ pub async fn get_signer(kms: Kms) -> eyre::Result<Arc<dyn KmsSigner + Send + Syn
             keystore,
             passphrase,
         } => {
-            let passphrase = match passphrase {
-                Some(passphrase) => passphrase,
-                None => rpassword::prompt_password("Enter passphrase: ")?,
-            };
             let signer = PrivateKeySigner::decrypt_keystore(keystore, passphrase)?;
             Ok(Arc::new(signer))
         }
