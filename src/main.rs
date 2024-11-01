@@ -44,7 +44,7 @@ enum KudaOperatorCommand {
         #[arg(long, env, required_if_eq("kms", "local"))]
         eip4844_keystore_path: Option<PathBuf>,
 
-        #[arg(long, env, required_if_eq("kms", "local"))]
+        #[arg(long, env)]
         eip4844_keystore_password: Option<String>,
 
         #[arg(long, env)]
@@ -93,7 +93,7 @@ struct KudaOperator {
     #[arg(long, env, required_if_eq("kms", "local"), global = true)]
     operator_keystore_path: Option<PathBuf>,
 
-    #[arg(long, env, required_if_eq("kms", "local"), global = true)]
+    #[arg(long, env, global = true)]
     operator_keystore_password: Option<String>,
 
     #[arg(
@@ -127,12 +127,13 @@ async fn main() -> eyre::Result<()> {
             let operator_keystore_path = cli
                 .operator_keystore_path
                 .expect("Operator keystore path must be set when using local signer and keystore");
-            let operator_keystore_password = cli.operator_keystore_password.expect(
-                "Operator keystore password must be set when using local signer and keystore",
-            );
+            let passphrase = match cli.operator_keystore_password {
+                Some(password) => password,
+                None => rpassword::prompt_password("Enter passphrase for operator keystore:")?,
+            };
             kuda_operator::kms::Kms::Local {
                 keystore: operator_keystore_path,
-                passphrase: Some(operator_keystore_password),
+                passphrase,
             }
         }
         Kms::Aws => {
@@ -207,12 +208,15 @@ async fn main() -> eyre::Result<()> {
                     let eip4844_keystore_path = eip4844_keystore_path.expect(
                         "EIP-4844 keystore path must be set when using local signer and keystore",
                     );
-                    let eip4844_keystore_password = eip4844_keystore_password.expect(
-                        "EIP-4844 keystore password must be set when using local signer and keystore",
-                    );
+                    let passphrase = match eip4844_keystore_password {
+                        Some(password) => password,
+                        None => {
+                            rpassword::prompt_password("Enter passphrase for EIP4844 keystore:")?
+                        }
+                    };
                     kuda_operator::kms::Kms::Local {
                         keystore: eip4844_keystore_path,
-                        passphrase: Some(eip4844_keystore_password),
+                        passphrase,
                     }
                 }
                 Kms::Aws => {

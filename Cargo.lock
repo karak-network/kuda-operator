@@ -3265,7 +3265,7 @@ dependencies = [
 
 [[package]]
 name = "kuda-operator"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "alloy",
  "aws-config",
