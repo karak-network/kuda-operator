@@ -129,7 +129,7 @@ async fn main() -> eyre::Result<()> {
                 .expect("Operator keystore path must be set when using local signer and keystore");
             let passphrase = match cli.operator_keystore_password {
                 Some(password) => password,
-                None => rpassword::prompt_password("Enter passphrase:")?,
+                None => rpassword::prompt_password("Enter passphrase for operator keystore:")?,
             };
             kuda_operator::kms::Kms::Local {
                 keystore: operator_keystore_path,
@@ -210,7 +210,9 @@ async fn main() -> eyre::Result<()> {
                     );
                     let passphrase = match eip4844_keystore_password {
                         Some(password) => password,
-                        None => rpassword::prompt_password("Enter passphrase:")?,
+                        None => {
+                            rpassword::prompt_password("Enter passphrase for EIP4844 keystore:")?
+                        }
                     };
                     kuda_operator::kms::Kms::Local {
                         keystore: eip4844_keystore_path,
