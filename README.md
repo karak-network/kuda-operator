@@ -32,7 +32,7 @@ This guide will help you set up and run the KUDA as an Operator.
 Run the following command to download the binaries:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/karak-network/kuda-operator/releases/download/v0.2.0/kuda-operator-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/karak-network/kuda-operator/releases/download/v0.2.1/kuda-operator-installer.sh | sh
 ````
 
 The script will place these binaries in the `$HOME/.karak/bin` directory and add this directory to your `$PATH` variable.
