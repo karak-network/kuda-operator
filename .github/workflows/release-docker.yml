@@ -1,7 +1,6 @@
 name: Create and publish a operator image to GitHub Container Registry
 
 on:
-  pull_request:
   workflow_dispatch:
   push:
     tags:
