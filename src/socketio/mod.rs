@@ -9,7 +9,7 @@ use alloy::{
 };
 use futures_util::FutureExt;
 use metrics::{counter, gauge};
-use model::{DaLayer, PostingIntent, PostingInterest, TaskResponsibility};
+use model::{DaLayer, Ping, Pong, PostingIntent, PostingInterest, TaskResponsibility};
 use rust_socketio::{asynchronous::ClientBuilder, Payload, TransportType};
 use serde_json::json;
 use tokio::sync::RwLock;
@@ -78,6 +78,16 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
             }
             .boxed()
         })
+        .on("ping", move |payload, client| {
+            let operator_address = operator_address;
+            async move {
+                let result = process_ping(&payload, &client, &operator_address).await;
+                if let Err(e) = result {
+                    tracing::error!("Ping error: {e:?}");
+                }
+            }
+            .boxed()
+        })
         .on("data-posting-intent", move |payload, client| {
             let operator_address = operator_address;
             let kuda_instance = kuda_instance_posting_intent.clone();
@@ -139,6 +149,29 @@ pub async fn socket_io<T: Transport + Clone, P: Provider<T> + 'static>(
         }
     }
 
+    Ok(())
+}
+
+#[tracing::instrument(skip(client, operator_address))]
+async fn process_ping(
+    payload: &Payload,
+    client: &rust_socketio::asynchronous::Client,
+    operator_address: &Address,
+) -> eyre::Result<()> {
+    if let Payload::Text(values) = payload {
+        let ping = serde_json::from_value::<Ping>(values[0].clone())?;
+        tracing::info!("Received ping: {}", ping.id);
+
+        client
+            .emit(
+                "pong",
+                serde_json::to_value(Pong {
+                    id: ping.id,
+                    operator: *operator_address,
+                })?,
+            )
+            .await?;
+    }
     Ok(())
 }
 
