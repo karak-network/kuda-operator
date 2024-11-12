@@ -181,7 +181,7 @@ async fn main() -> eyre::Result<()> {
     }
     let kuda_instance = Arc::new(Kuda::new(cli.kuda_contract_address, provider.clone()));
 
-    let min_operator_bond = kuda_instance.minOperatorBond().call().await?._0;
+    let min_operator_bond = kuda_instance.MIN_OPERATOR_BOND().call().await?._0;
 
     let operator = Arc::new(Operator::new(
         operator_address,
