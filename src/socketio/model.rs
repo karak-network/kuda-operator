@@ -63,6 +63,17 @@ impl Display for DaLayer {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Ping {
+    pub id: Uuid,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Pong {
+    pub id: Uuid,
+    pub operator: Address,
+}
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
