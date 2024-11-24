@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use alloy::{
-    primitives::{Address, Bytes, TxHash, U256},
+    primitives::{utils::format_units, Address, Bytes, TxHash, U256},
     providers::Provider,
     transports::Transport,
 };
@@ -55,6 +55,12 @@ impl<T: Transport + Clone, P: Provider<T> + Clone> Operator<T, P> {
 
     #[tracing::instrument(skip(self))]
     pub async fn submit_operator_bond(&self, amount: U256) -> eyre::Result<TxHash> {
+        let balance = self.provider.get_balance(self.operator_address).await?;
+        println!("Balance: {} ETH", format_units(balance, "ether")?);
+        println!("Amount: {} ETH", format_units(amount, "ether")?);
+        if balance < amount {
+            return Err(eyre::eyre!("Insufficient balance"));
+        }
         let receipt = self
             .kuda_instance
             .submitOperatorBond()

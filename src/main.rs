@@ -267,9 +267,8 @@ async fn main() -> eyre::Result<()> {
         KudaOperatorCommand::Register => {
             let config = RegisterConfig {
                 operator,
-                kuda_address: cli.kuda_contract_address,
                 operator_address,
-                provider,
+                kuda_instance,
             };
 
             register(config).await?;

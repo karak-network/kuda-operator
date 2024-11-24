@@ -1,34 +1,114 @@
 [
   {
     "type": "function",
-    "name": "cancelSlashingHook",
-    "inputs": [
+    "name": "CHALLENGE_BOND",
+    "inputs": [],
+    "outputs": [
       {
-        "name": "operator",
-        "type": "address",
-        "internalType": "address"
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "cancelUpdateStakeHook",
-    "inputs": [
+    "name": "CHALLENGE_PERIOD",
+    "inputs": [],
+    "outputs": [
       {
-        "name": "operator",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "vault",
-        "type": "address",
-        "internalType": "address"
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "COUNTER_CHALLENGE_PERIOD",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "FULL_WITHDRAW_DELAY",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAX_SLASHABLE_PERCENTAGE_WAD",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MIN_CLIENT_BALANCE",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MIN_OPERATOR_BOND",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "SLASHING_PERCENTAGE",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint96",
+        "internalType": "uint96"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "cancelOwnershipHandover",
+    "inputs": [],
     "outputs": [],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -78,6 +158,32 @@
         "name": "isNoOp",
         "type": "bool",
         "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "completeOwnershipHandover",
+    "inputs": [
+      {
+        "name": "pendingOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "core",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "stateMutability": "view"
@@ -212,12 +318,56 @@
   },
   {
     "type": "function",
-    "name": "finishSlashingHook",
+    "name": "finishUpdateStakeHook",
     "inputs": [
       {
         "name": "operator",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "queuedStakeUpdate",
+        "type": "tuple",
+        "internalType": "struct IBaseDSS.QueuedStakeUpdate",
+        "components": [
+          {
+            "name": "nonce",
+            "type": "uint48",
+            "internalType": "uint48"
+          },
+          {
+            "name": "startTimestamp",
+            "type": "uint48",
+            "internalType": "uint48"
+          },
+          {
+            "name": "operator",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "updateRequest",
+            "type": "tuple",
+            "internalType": "struct IBaseDSS.StakeUpdateRequest",
+            "components": [
+              {
+                "name": "vault",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "dss",
+                "type": "address",
+                "internalType": "contract IBaseDSS"
+              },
+              {
+                "name": "toStake",
+                "type": "bool",
+                "internalType": "bool"
+              }
+            ]
+          }
+        ]
       }
     ],
     "outputs": [],
@@ -225,7 +375,7 @@
   },
   {
     "type": "function",
-    "name": "finishUpdateStakeHook",
+    "name": "getActiveVaults",
     "inputs": [
       {
         "name": "operator",
@@ -233,8 +383,27 @@
         "internalType": "address"
       }
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]",
+        "internalType": "address[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getRegisteredOperators",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]",
+        "internalType": "address[]"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -249,26 +418,6 @@
         "name": "_core",
         "type": "address",
         "internalType": "address"
-      },
-      {
-        "name": "_minBalance",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "_challengeBond",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "_permittedSubmissionPeriod",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "_minOperatorBondValue",
-        "type": "uint256",
-        "internalType": "uint256"
       },
       {
         "name": "_celestiaVerifier",
@@ -286,6 +435,25 @@
   },
   {
     "type": "function",
+    "name": "isOperatorJailed",
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "isOperatorRegistered",
     "inputs": [
       {
@@ -296,7 +464,7 @@
     ],
     "outputs": [
       {
-        "name": "registered",
+        "name": "",
         "type": "bool",
         "internalType": "bool"
       }
@@ -348,13 +516,45 @@
   },
   {
     "type": "function",
-    "name": "paused",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "result",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ownershipHandoverExpiresAt",
+    "inputs": [
+      {
+        "name": "pendingOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "proxiableUUID",
     "inputs": [],
     "outputs": [
       {
         "name": "",
-        "type": "bool",
-        "internalType": "bool"
+        "type": "bytes32",
+        "internalType": "bytes32"
       }
     ],
     "stateMutability": "view"
@@ -379,21 +579,17 @@
   },
   {
     "type": "function",
-    "name": "requestSlashingHook",
-    "inputs": [
-      {
-        "name": "operator",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "slashingPercentagesWad",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
-      }
-    ],
+    "name": "renounceOwnership",
+    "inputs": [],
     "outputs": [],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "requestOwnershipHandover",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -407,7 +603,7 @@
       {
         "name": "newStake",
         "type": "tuple",
-        "internalType": "struct StakeUpdateRequest",
+        "internalType": "struct IBaseDSS.StakeUpdateRequest",
         "components": [
           {
             "name": "vault",
@@ -417,12 +613,12 @@
           {
             "name": "dss",
             "type": "address",
-            "internalType": "contract IDSS"
+            "internalType": "contract IBaseDSS"
           },
           {
-            "name": "stake",
-            "type": "uint96",
-            "internalType": "uint96"
+            "name": "toStake",
+            "type": "bool",
+            "internalType": "bool"
           }
         ]
       }
@@ -557,7 +753,7 @@
     "name": "supportsInterface",
     "inputs": [
       {
-        "name": "interfaceID",
+        "name": "interfaceId",
         "type": "bytes4",
         "internalType": "bytes4"
       }
@@ -569,7 +765,7 @@
         "internalType": "bool"
       }
     ],
-    "stateMutability": "view"
+    "stateMutability": "pure"
   },
   {
     "type": "function",
@@ -592,21 +788,47 @@
   },
   {
     "type": "function",
+    "name": "transferOwnership",
+    "inputs": [
+      {
+        "name": "newOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
     "name": "unregistrationHook",
     "inputs": [
       {
         "name": "operator",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "upgradeToAndCall",
+    "inputs": [
+      {
+        "name": "newImplementation",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "extraData",
+        "name": "data",
         "type": "bytes",
         "internalType": "bytes"
       }
     ],
     "outputs": [],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -667,12 +889,44 @@
   },
   {
     "type": "event",
-    "name": "Paused",
+    "name": "OwnershipHandoverCanceled",
     "inputs": [
       {
-        "name": "account",
+        "name": "pendingOwner",
         "type": "address",
-        "indexed": false,
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnershipHandoverRequested",
+    "inputs": [
+      {
+        "name": "pendingOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
+      {
+        "name": "oldOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newOwner",
+        "type": "address",
+        "indexed": true,
         "internalType": "address"
       }
     ],
@@ -705,12 +959,12 @@
   },
   {
     "type": "event",
-    "name": "Unpaused",
+    "name": "Upgraded",
     "inputs": [
       {
-        "name": "account",
+        "name": "implementation",
         "type": "address",
-        "indexed": false,
+        "indexed": true,
         "internalType": "address"
       }
     ],
@@ -718,7 +972,17 @@
   },
   {
     "type": "error",
+    "name": "AlreadyInitialized",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "AmountBelowMinBalance",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CallerNotCore",
     "inputs": []
   },
   {
@@ -763,43 +1027,6 @@
   },
   {
     "type": "error",
-    "name": "ECDSAInvalidSignature",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "ECDSAInvalidSignatureLength",
-    "inputs": [
-      {
-        "name": "length",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "ECDSAInvalidSignatureS",
-    "inputs": [
-      {
-        "name": "s",
-        "type": "bytes32",
-        "internalType": "bytes32"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "EnforcedPause",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "ExpectedPause",
-    "inputs": []
-  },
-  {
-    "type": "error",
     "name": "FailedToDepositChallengeBond",
     "inputs": []
   },
@@ -820,12 +1047,22 @@
   },
   {
     "type": "error",
+    "name": "NewOwnerIsZeroAddress",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "NoChallengeForGivenTaskId",
     "inputs": []
   },
   {
     "type": "error",
     "name": "NoChallengeForTaskId",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NoHandoverRequest",
     "inputs": []
   },
   {
@@ -866,6 +1103,21 @@
   {
     "type": "error",
     "name": "SubmissionTimeOver",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Unauthorized",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "UnauthorizedCallContext",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "UpgradeFailed",
     "inputs": []
   },
   {
