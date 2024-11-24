@@ -1,6 +1,6 @@
 [package]
 name = "kuda-operator"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Karak Network"]
 repository = "https://github.com/karak-network/kuda-operator.git"
