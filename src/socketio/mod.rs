@@ -1,7 +1,7 @@
 use std::{str::FromStr, sync::Arc};
 
 use alloy::{
-    primitives::{Address, Bytes, FixedBytes},
+    primitives::{Address, Bytes, FixedBytes, U256},
     providers::Provider,
     signers::{Signature, Signer},
     sol_types::SolValue,
@@ -192,7 +192,14 @@ async fn process_posting_intent<T: Transport + Clone, P: Provider<T>>(
             .call()
             .await?
             .balance;
-        if client_balance >= posting_intent.reward_amount {
+
+        let usd_balance = kuda_instance
+            .clientBalance(posting_intent.client_address, posting_intent.reward_token)
+            .call()
+            .await?
+            .balance;
+
+        if client_balance >= posting_intent.reward_amount && usd_balance >= U256::from(100_000) {
             let posting_interest = PostingInterest {
                 task_id: posting_intent.task_id,
                 operator_address: *operator_address,
