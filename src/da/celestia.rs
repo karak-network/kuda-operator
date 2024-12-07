@@ -49,7 +49,7 @@ impl Submitter for CelestiaClient {
 
         tracing::info!(
             "[Celestia] Submitted blob with commitment {} at height {} ",
-            hex::encode(&computed_commitment),
+            hex::encode(computed_commitment),
             height
         );
 
