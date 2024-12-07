@@ -12,7 +12,7 @@ pub trait Submitter {
 
     async fn submit(
         &self,
-        provided_commitment: &str,
+        provided_commitment: &[u8],
         data: BlobData,
     ) -> eyre::Result<Self::Receipt>;
 }

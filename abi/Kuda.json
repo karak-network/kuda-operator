@@ -209,8 +209,8 @@
       },
       {
         "name": "commitment",
-        "type": "string",
-        "internalType": "string"
+        "type": "bytes",
+        "internalType": "bytes"
       },
       {
         "name": "daLayer",
@@ -673,8 +673,8 @@
       },
       {
         "name": "commitment",
-        "type": "string",
-        "internalType": "string"
+        "type": "bytes",
+        "internalType": "bytes"
       },
       {
         "name": "context",
@@ -712,7 +712,7 @@
   },
   {
     "type": "function",
-    "name": "submittedDALayer",
+    "name": "submittedReceipt",
     "inputs": [
       {
         "name": "taskId",
@@ -725,25 +725,21 @@
         "name": "daLayer",
         "type": "uint8",
         "internalType": "enum DALayer"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "submittedReceipt",
-    "inputs": [
+      },
       {
-        "name": "taskId",
-        "type": "bytes16",
-        "internalType": "bytes16"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "receipt",
+        "name": "context",
         "type": "bytes",
         "internalType": "bytes"
+      },
+      {
+        "name": "commitment",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "submissionTime",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -766,25 +762,6 @@
       }
     ],
     "stateMutability": "pure"
-  },
-  {
-    "type": "function",
-    "name": "taskOperator",
-    "inputs": [
-      {
-        "name": "taskId",
-        "type": "bytes16",
-        "internalType": "bytes16"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "operator",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -949,9 +926,9 @@
         "internalType": "address"
       },
       {
-        "name": "receipt",
+        "name": "commitment",
         "type": "bytes",
-        "indexed": true,
+        "indexed": false,
         "internalType": "bytes"
       }
     ],

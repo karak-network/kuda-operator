@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use alloy::primitives::{Address, U256};
+use alloy::primitives::{Address, Bytes, U256};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -28,7 +28,7 @@ pub struct PostingInterest {
 pub struct TaskResponsibility {
     pub task_id: Uuid,
     pub data: String,
-    pub commitment: String,
+    pub commitment: Bytes,
     pub da_layer: DaLayer,
     pub signature: String,
     pub submission_time: U256,
