@@ -218,16 +218,18 @@ impl Submitter for Eip4844Client {
 
     async fn submit(
         &self,
-        provided_commitment: &str,
+        provided_commitment: &[u8],
         blob_data: BlobData,
     ) -> eyre::Result<Self::Receipt> {
         // Create a sidecar with some data.
         let sidecar: SidecarBuilder<TerminationCoder> = SidecarBuilder::from_slice(&blob_data.data);
         let sidecar = sidecar.build()?;
         let commitment = sidecar.commitments[0];
-        if provided_commitment != commitment.to_string() {
+        if provided_commitment != commitment {
             return Err(eyre::eyre!(
-                "Provided commitment does not match computed commitment {provided_commitment} != {}", commitment.to_string()
+                "Provided commitment does not match computed commitment {} != {}",
+                hex::encode(provided_commitment),
+                commitment.to_string()
             ));
         }
 

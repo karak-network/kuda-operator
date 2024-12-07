@@ -1,4 +1,3 @@
-use base64::Engine;
 use borsh::{BorshDeserialize, BorshSerialize};
 use celestia_rpc::{BlobClient, Client};
 use celestia_types::{nmt::NS_SIZE, Blob, Commitment, TxConfig};
@@ -28,13 +27,13 @@ impl Submitter for CelestiaClient {
 
     async fn submit(
         &self,
-        provided_commitment: &str,
+        provided_commitment: &[u8],
         blob_data: BlobData,
     ) -> eyre::Result<Self::Receipt> {
         let blob = Blob::try_from(blob_data)?;
         let namespace = blob.namespace;
         let commitment = blob.commitment;
-        let computed_commitment = base64::engine::general_purpose::STANDARD.encode(commitment.0);
+        let computed_commitment = commitment.0;
 
         if provided_commitment != computed_commitment {
             return Err(eyre::eyre!(
@@ -49,7 +48,9 @@ impl Submitter for CelestiaClient {
             .await?;
 
         tracing::info!(
-            "[Celestia] Submitted blob with commitment {computed_commitment} at height {height} "
+            "[Celestia] Submitted blob with commitment {} at height {} ",
+            hex::encode(computed_commitment),
+            height
         );
 
         let receipt = CelestiaReceipt {
@@ -82,6 +83,8 @@ impl TryFrom<BlobData> for Blob {
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
+
+    use base64::Engine;
 
     use super::*;
 
